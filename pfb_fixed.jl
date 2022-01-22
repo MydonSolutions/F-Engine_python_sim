@@ -1,5 +1,5 @@
 include("pfb_coeff_gen.jl");
-include("Fixpoint.jl");
+include("FixpointArray.jl");
 
 """
 Prepares a BitVector for the shiftregister (swreg). It can take in
@@ -23,7 +23,7 @@ end
 Bit reverses an array's contents according to bitRev of the array's indices.
 Takes an array of length N which must be a power of two.
 """
-function fixBitRevArray(array::CFixpoint, N::Integer)::CFixpoint
+function fixBitRevArray(array::CFixpointArray, N::Integer)::CFixpointArray
     return array[bitRev(N)];
 end;
 
@@ -31,7 +31,7 @@ end;
 Generates twiddle factors for the natInIterDitFFT FFT.
 See also: [`fixNatInIterDitFFT`](@ref)   
 """
-function fixMakeTwiddle(N::Integer, fx_scheme::FixpointScheme)::CFixpoint
+function fixMakeTwiddle(N::Integer, fx_scheme::FixpointScheme)::CFixpointArray
     i = collect(0:div(N, 2)-1);
     twids = exp.(i .* (-2 * pi * (1im / N)));
     fx_twids = fromComplex(twids,fx_scheme);
@@ -46,12 +46,12 @@ like CASPER does.
 struct FixPFBScheme
     N           ::Integer;
     dual        ::Bool;
-    reg         ::CFixpoint;
+    reg         ::CFixpointArray;
     staged      ::Bool;
     fwidth      ::Float64;
     chan_acc    ::Bool;
-    window      ::Fixpoint;
-    twids       ::CFixpoint;
+    window      ::FixpointArray;
+    twids       ::CFixpointArray;
     swreg       ::BitVector;
     in_dat_sch  ::FixpointScheme;
     win_dat_sch ::FixpointScheme;
@@ -88,7 +88,7 @@ fixNatInIterDitFFT(pfbsch::FloatPFBScheme, data::Array{<:Complex{<:Real}}) :: Ar
 ```
 natInIterDitFFT accepts PFB scheme and data.
 """
-function fixNatInIterDitFFT(fixpfbsch::FixPFBScheme, c_data::CFixpoint) :: CFixpoint
+function fixNatInIterDitFFT(fixpfbsch::FixPFBScheme, c_data::CFixpointArray) :: CFixpointArray
     c_data = quantise(c_data,fixpfbsch.stg_dat_sch); #make it stg_data size, not in_data size
     N = length(c_data.real.data);
     if fixpfbsch.staged
@@ -137,9 +137,9 @@ end
 """
 FIR: Takes data segment (N long) and appends each value to each fir.
 Returns data segment (N long) that is the sum of fircontents*windowcoeffs.
-Operates on CFixpoint types
+Operates on CFixpointArray types
 """
-function FixPFBFir(pfbsch::FixPFBScheme,x::CFixpoint) :: CFixpoint
+function FixPFBFir(pfbsch::FixPFBScheme,x::CFixpointArray) :: CFixpointArray
     pfbsch.reg = hcat(x,pfbsch.reg)[1:end,1:end-1];
     X = sum(pfbsch.reg * pfbsch.window, dims=2);
     return X;

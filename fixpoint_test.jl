@@ -2,7 +2,7 @@ using Test
 using Base: abs
 include("fixpoint.jl");
 
-#Fixpoint testing. Create our scheme:
+#FixpointArray testing. Create our scheme:
 f_scheme_1 = FixpointScheme(18,17);
 f_scheme_2 = FixpointScheme(12,13);
 
@@ -48,7 +48,7 @@ f_lshift = f_val1 << 1;
 @test any(abs.(f_lshift.data-ideal_lshift) .< 0.0001)
 @test any(abs.(toFloat(quantise(f_val1,f_scheme_2))-val1) .< 0.0001)
 
-#CFixpoint testing
+#CFixpointArray testing
 cf_val1 = fromComplex(val1,val2, f_scheme_1);
 cf_val2 = fromComplex(val2, val1, f_scheme_1);
 
