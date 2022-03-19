@@ -1,6 +1,6 @@
 using Test
 using Base: abs
-include("fixpoint.jl");
+using DiscreteNumberSystems.FixpointSystem
 
 #FixpointArray testing. Create our scheme:
 f_scheme_1 = FixpointScheme(18,17);
