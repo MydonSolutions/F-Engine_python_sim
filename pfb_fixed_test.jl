@@ -1,7 +1,6 @@
 using FFTW;
 using Test;
-using PyPlot;
-pygui(true);
+using DiscreteNumberSystems.FixpointSystem
 include("pfb_fixed.jl");
 include("pfb_floating.jl");
 

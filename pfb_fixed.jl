@@ -1,5 +1,5 @@
 include("pfb_coeff_gen.jl");
-include("FixpointArray.jl");
+using DiscreteNumberSystems.FixpointSystem
 
 """
 Prepares a BitVector for the shiftregister (swreg). It can take in
