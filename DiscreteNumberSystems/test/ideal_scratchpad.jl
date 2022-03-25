@@ -17,20 +17,18 @@ struct CNArray{N} <:AbstractArray{Complex{<:Integer},N}
 	end
 end
 
-CNArray(real::Scalar,imag::Scalar) = CScalar(real,imag)
-CNArray(real::Integer,imag::Integer) = CScalar(Scalar(real),Scalar(imag))
-
-NArray(data::Integer) = Scalar(data)
-
 Base.size(A::NArray) = size(A.data)
 Base.size(A::Scalar) = size(A.data)
+Base.length(A::Scalar) = length(A.data)
 Base.size(CA::CNArray) = size(CA.real.data)
 Base.size(CS::CScalar) = size(CS.real)
+Base.length(CS::CScalar) = length(CS.real)
 
 Base.@inline function Base.getindex(CA::CNArray{N}, i::Vararg{Integer,N}) where {N}
 	#Assume that real.data has the same bounds as imag.data
 	@boundscheck checkbounds(CA.real.data, i...)
-	@inbounds CNArray(getindex(CA.real, i...),getindex(CA.imag, i...))
+	@inbounds rdata, idata = getindex(CA.real, i...), getindex(CA.imag, i...)
+	length(rdata) == 1 ? CScalar(rdata, idata) : CNArray(rdata, idata)
 end
 Base.@inline function Base.setindex!(CA::CNArray{N},v, i::Vararg{Int,N}) where{N}
 	#Assume that real.data has the same bounds as imag.data
@@ -40,7 +38,8 @@ end
 
 Base.@inline function Base.getindex(A::NArray{N}, i::Vararg{Int, N}) where {N}
 	@boundscheck checkbounds(A.data, i...)
-	@inbounds NArray(getindex(A.data, i...))
+	@inbounds data = getindex(A.data, i...)
+	length(data) == 1 ? Scalar(data) : NArray(data)
 end
 
 Base.@inline function Base.setindex!(A::NArray{N}, v, i::Vararg{Int, N}) where {N}
