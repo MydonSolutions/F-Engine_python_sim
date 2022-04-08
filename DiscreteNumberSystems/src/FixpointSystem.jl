@@ -4,7 +4,7 @@ using Printf
 
 import Base: convert, +, -, *, <<, >>
 
-export FixpointScheme, Fixpoint, Fixpoint, CFixpoint, CFixpoint
+export FixpointScheme, Fixpoint, FixpointArray, CFixpoint, CFixpointArray
 
 export convert, fromFloat, toFloat, fromComplex, toComplex, zeros, normalise, cast, sum, *, +, -, power, conj, clamp_wrap, quantise, copy, size, length, show, getindex, setindex!, hcat, lastindex, >>, <<
 
@@ -81,7 +81,7 @@ end
 Overload the Base.convert function to convert from Fixpoint to Real. This process discards
 the scheme, only returning the floating point value.
 """
-function Base.convert(float::Type{Float64},f::Fixpoint)::Float64
+function Base.convert(float::Type{<:Real},f::Fixpoint)::Float64
     return float(f.data)/f.scheme.scale;
 end
 
@@ -105,7 +105,7 @@ end
 Overload the Base.convert function to convert from FixpointArray{N} to Array{Real,N}. This process discards
 the scheme, only returning the floating point array.
 """
-function Base.convert(float_arr::Type{Array{Float64,N}},f_arr::FixpointArray{N})::Type{Array{Float64,N}} where {N}
+function Base.convert(float_arr::Type{<:AbstractArray{<:Real,N}},f_arr::FixpointArray{N}) where {N}
     return convert(float_arr,f_arr.data)./f_arr.scheme.scale
 end
 """
@@ -159,7 +159,7 @@ end
 Overload the Base.convert function to convert from CFixpointArray{N} to Array{Real,N}. This process discards
 the scheme, only returning the complex floating point array.
 """
-function Base.convert(complex_arr::Type{Array{ComplexF64,N}},cf_arr::CFixpointArray{N})::Type{Array{ComplexF64,N}} where {N}
+function Base.convert(complex_arr::Type{AbstractArray{ComplexF64,N}},cf_arr::CFixpointArray{N})::Type{Array{ComplexF64,N}} where {N}
     return convert(complex_arr, cf_arr.real./cf_arr.scheme.scale .+ (convert(complex_arr, cf_arr.imag)./cf_arr.scheme.scale)im)
 end
 
@@ -358,29 +358,29 @@ end
 # # Misc Fixpoint type handling functions
 # #######################################################################################
 
-# """
-# Does a clamp operation but wraps the value to min/max rather than saturate 
-# the value like standard clamp.
+"""
+Does a clamp operation but wraps the value to min/max rather than saturate 
+the value like standard clamp.
 
-# See also: [`clamp`](@ref)
-# """
-# function clamp_wrap(i :: Integer, min :: Integer, max :: Integer)
-#     return ((i - min) % (max - min)) + min;
-# end
+See also: [`clamp`](@ref)
+"""
+function clamp_wrap(i :: Integer, min :: Integer, max :: Integer)
+    return ((i - min) % (max - min)) + min;
+end
 
-# """
-# Does a clamp operation but wraps the value to min/max rather than saturate 
-# the value like standard clamp. Takes a Fixpoint type in this instance.
+"""
+Does a clamp operation but wraps the value to min/max rather than saturate 
+the value like standard clamp. Takes a Fixpoint type in this instance.
 
-# See also: [`clamp_wrap`](@ref)
-# """
-# function clamp_wrap(f :: Fixpoint, min :: Integer, max :: Integer) ::Fixpoint
-#     clamp_val = ((f.data .- min) .% (min - max)) .+ min;
-#     scheme = FixpointScheme(f.scheme.bits,f.scheme.fraction,unsigned=f.scheme.unsigned,
-#     max_int=max, min_int=min,
-#     ovflw_behav=f.scheme.ovflw_behav, undflw_behav=f.scheme.undflw_behav);
-#     return Fixpoint(clamp_val,scheme);        
-# end
+See also: [`clamp_wrap`](@ref)
+"""
+function clamp_wrap(f :: Fixpoint, min :: Integer, max :: Integer) ::Fixpoint
+    clamp_val = ((f.data .- min) .% (min - max)) .+ min;
+    scheme = FixpointScheme(f.scheme.bits,f.scheme.fraction,unsigned=f.scheme.unsigned,
+    max_int=max, min_int=min,
+    ovflw_behav=f.scheme.ovflw_behav, undflw_behav=f.scheme.undflw_behav);
+    return Fixpoint(clamp_val,scheme);        
+end
 
 # """
 # Requantise the data contained in fxpt according to the new scheme provided.
