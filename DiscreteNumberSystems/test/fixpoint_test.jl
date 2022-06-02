@@ -31,6 +31,7 @@ f_val2 = FixpointArray{ndims(val2)}(val2,f_scheme_1);
 # #Test adding
 ideal_add = val1 .+ val2;
 f_add = f_val1 + f_val2;
+@test isapprox(float(f_scalar + f_scalar), scalar + scalar, atol=0.0001)
 @test isapprox(float(f_add), ideal_add, atol=0.0001)
 
 # #Test multiplication
