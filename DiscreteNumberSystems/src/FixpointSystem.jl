@@ -90,6 +90,7 @@ Convenience function to convert from Fixpoint to a Float64.
 function Base.float(f :: Fixpoint) :: Float64
     return convert(Float64, f)
 end
+Base.convert(::Type{<:Integer}, f::Fixpoint) = f.data
 
 """
 FixpointArray type that accepts an integer array accompanied by a FixpointScheme that
@@ -155,6 +156,7 @@ Convenience function to convert from Fixpoint to an array of Float64.
 function float(cf :: CFixpoint) :: ComplexF64
     return convert(ComplexF64, cf)
 end
+Base.convert(::Type{<:Integer}, cf::CFixpoint) = cf.real + 1im*cf.imag
 
 """
 CFixpointArray is the complex extension of Fixpoint that holds two FixpointArray types (real and imag) as its 
@@ -611,39 +613,22 @@ Base.@inline function Base.getindex(cf :: CFixpointArray{N}, i :: Vararg{Int, N}
 	length(rdata) == 1 ? CFixpoint(rdata, idata) : CFixpointArray(rdata, idata);
 end
 
-# """
-# Overload setindex function for setting data elements out Fixpoint type.
-# """
-# function Base.setindex!(f :: Fixpoint, v :: Fixpoint , i :: Int) :: Nothing
-#     f.data[i] = v.data;
-# end
+"""
+Overload setindex function for setting data elements of FixpointArray type.
+"""
+Base.@inline function Base.setindex!(f::FixpointArray{N}, v, i::Vararg{Int, N}) where {N}
+	@boundscheck checkbounds(f.data, i...)
+	@inbounds setindex!(f.data, v, i...)
+end
 
-# """
-# Overload setindex function for setting data elements out CFixpoint type.
-# """
-# function Base.setindex!(cf :: CFixpoint, v :: CFixpoint, i :: Int) :: Nothing
-#     cf.real[i] = v.real;
-#     cf.imag[i] = v.imag;
-# end
-
-# """
-# Overload setindex function for setting data elements out Fixpoint type.
-# Falls back to earlier setindex! function in the event of multidimensional
-# indexing.
-# """
-# function Base.setindex!(f :: Fixpoint, v :: Fixpoint , I...) :: Nothing
-#     f.data[I] = v.data;
-# end
-
-# """
-# Overload setindex function for setting data elements out CFixpoint type.
-# Falls back to earlier setindex! function in the event of multidimensional
-# indexing.
-# """
-# function Base.setindex!(cf :: CFixpoint, v :: CFixpoint, I...) :: Nothing
-#     cf.real[I] = v.real;
-#     cf.imag[I] = v.imag;
-# end
+"""
+Overload setindex function for setting data elements of FixpointArray type.
+"""
+Base.@inline function Base.setindex!(cf::CFixpointArray{N}, v, i::Vararg{Int,N}) where{N}
+	#Assume that real.data has the same bounds as imag.data
+	@boundscheck checkbounds(cf.real.data,i...)
+	@inbounds CFixpointArray{N}(setindex!(cf.real,v.real,i...),setindex!(cf.imag,v.imag,i...))
+end
 
 """
 Overload hcat function to handle horizontal concatenation of FixpointArray.

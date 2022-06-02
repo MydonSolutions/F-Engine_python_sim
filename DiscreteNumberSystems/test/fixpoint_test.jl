@@ -67,8 +67,9 @@ f_hcat = hcat(f_val1,f_val2)
 #Test quantise of Fixpoint values
 @test isapprox(float(quantise(f_val1,f_scheme_2)), val1, atol=0.001)
 
-# #Test slicing
-# sliced_f_val1=f_val1[1:end-1]
+#Test slicing
+sliced_f_val1 = f_val1[2:end-1]
+sliced_f_val1[:] = f_val1[1:end-2]
  
 # """
 # CFixpointArray testing
