@@ -236,29 +236,29 @@ end
 # # Arithmetic functions
 # #######################################################################################
 
-# """
-# Overload sum function to take Fixpoint type array as argument.
+"""
+Overload sum function to take a FixpointArray argument.
 
-# See also: [`sum`](@ref)
-# """
-# function Base.sum(f :: Fixpoint; dims :: Union{Integer,Colon}=:) :: Fixpoint
-#     sum_val = sum(f.data, dims=dims);
-#     bits = f.scheme.bits + ceil.(Integer,log2.(length(f.data)/length(sum_val)));
-#     scheme = FixpointScheme(bits, f.scheme.fraction, min_int=f.scheme.min,
-#     max_int=f.scheme.max, unsigned=f.scheme.unsigned, ovflw_behav=f.scheme.ovflw_behav,
-#     undflw_behav=f.scheme.undflw_behav);
-#     return Fixpoint(sum_val,scheme);
-# end
+See also: [`sum`](@ref)
+"""
+function Base.sum(f :: FixpointArray{N}; dims :: Union{Integer,Colon}=:) where {N}
+    sum_val = sum(f.data, dims=dims);
+    bits = f.scheme.bits + ceil.(Integer,log2.(length(f.data)/length(sum_val)));
+    scheme = FixpointScheme(bits, f.scheme.fraction, min_int=f.scheme.min,
+    max_int=f.scheme.max, unsigned=f.scheme.unsigned, ovflw_behav=f.scheme.ovflw_behav,
+    undflw_behav=f.scheme.undflw_behav);
+    return length(sum_val) == 1 ? Fixpoint(sum_val,scheme) : FixpointArray{N}(sum_val,scheme)
+end
 
-# """
-# Overload sum function to take CFixpoint type array as argument.
-# See also: [`sum`](@ref)
-# """
-# function Base.sum(cf :: CFixpoint; dims :: Union{Integer,Colon}=:) :: CFixpoint
-#     r_sum_val = sum(cf.real,dims=dims);
-#     i_sum_val = sum(cf.imag,dims=dims);
-#     return CFixpoint(r_sum_val,i_sum_val);
-# end
+"""
+Overload sum function to take a CFixpointArray argument.
+See also: [`sum`](@ref)
+"""
+function Base.sum(cf :: CFixpoint; dims :: Union{Integer,Colon}=:) :: CFixpoint
+    r_sum_val = sum(cf.real,dims=dims);
+    i_sum_val = sum(cf.imag,dims=dims);
+    return CFixpoint(r_sum_val,i_sum_val);
+end
 
 """
 Overload * function to take Fixpoint arguments.

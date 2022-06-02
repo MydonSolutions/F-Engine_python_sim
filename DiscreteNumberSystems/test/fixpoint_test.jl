@@ -36,10 +36,8 @@ f_val2 = FixpointArray{ndims(val2)}(val2,f_scheme_1);
 @test isapprox(float(f_scalar * f_scalar), scalar * scalar, atol=0.0001)
 @test isapprox(float(f_val1 * f_val2), val1 .* val2, atol=0.0001)
 
-# #Test summing the vectors
-# ideal_sum=sum(val1,dims=1)  
-# f_sum = sum(f_val1,dims=1)
-# @test any(abs.(toFloat(f_sum)-ideal_sum) .< 0.0001)
+#Test summing the vectors
+@test isapprox(float(sum(f_val1,dims=1)), sum(val1,dims=1), atol=0.0001)
 
 # #Test subtracting the vectors
 # ideal_sub = val1 .- val2;
