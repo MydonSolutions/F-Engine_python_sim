@@ -105,7 +105,7 @@ end
 Overload the Base.convert function to convert from FixpointArray{N} to Array{Real,N}. This process discards
 the scheme, only returning the floating point array.
 """
-function Base.convert(float_arr::Type{<:AbstractArray{<:Real,N}},f_arr::FixpointArray{N}) where {N}
+function Base.convert(float_arr::Type{<:Array{<:Real,N}},f_arr::FixpointArray{N}) where {N}
     return convert(float_arr,f_arr.data)./f_arr.scheme.scale
 end
 """
