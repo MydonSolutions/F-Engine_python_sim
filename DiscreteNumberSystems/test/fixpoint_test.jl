@@ -23,16 +23,16 @@ f_val2 = FixpointArray{ndims(val2)}(val2,f_scheme_1);
 
 scalar = 0.14159265
 f_scalar = Fixpoint(scalar, f_scheme_1)
-@test abs.(float(f_scalar)-scalar) .< 0.001
+@test isapprox(float(f_scalar), scalar, atol=0.0001)
 
 #Test Fixpoint conversion
-@test any(abs.(float(f_val1)-val1) .< 0.0001)
-@test any(abs.(float(f_val2)-val2) .< 0.0001)
+@test isapprox(float(f_val1), val1, atol=0.0001)
+@test isapprox(float(f_val2), val2, atol=0.0001)
 
 # #Test adding
 ideal_add = val1 .+ val2;
 f_add = f_val1 + f_val2;
-@test any(abs.(float(f_add)-ideal_add) .< 0.0001)
+@test isapprox(float(f_add), ideal_add, atol=0.0001)
 
 # #Test multiplication
 # ideal_mul = val1 .* val2;
