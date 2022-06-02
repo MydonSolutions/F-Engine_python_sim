@@ -59,10 +59,10 @@ ideal_lshift = f_val1.data .<< 1;
 f_lshift = f_val1 << 1;
 @test isapprox(f_lshift.data, ideal_lshift, atol=0.0001)
 
-# #Test hcat of Fixpoint values
-# ideal_hcat = hcat(val1,val2)
-# f_hcat = hcat(f_val1,f_val2)
-# @test any(abs.(toFloat(f_hcat) - ideal_hcat) .< 0.0001)
+#Test hcat of Fixpoint values
+ideal_hcat = hcat(val1,val2)
+f_hcat = hcat(f_val1,f_val2)
+@test isapprox(float(f_hcat), ideal_hcat, atol=0.0001)
 
 # #Test quantise of Fixpoint values
 # @test any(abs.(toFloat(quantise(f_val1,f_scheme_2))-val1) .< 0.0001)

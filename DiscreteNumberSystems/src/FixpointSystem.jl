@@ -645,31 +645,33 @@ end
 #     cf.imag[I] = v.imag;
 # end
 
-# """
-# Overload hcat function to handle horizontal concatenation of Fixpoint types.
-# Requires that schemes match.
-# """
-# function Base.hcat(f_1 :: Fixpoint, f_2 :: Fixpoint) :: Fixpoint 
-#     #Check schemes match:
-#     if f_1.scheme == f_2.scheme
-#         return Fixpoint(hcat(f_1.data,f_2.data),f_1.scheme);
-#     else
-#         error("Fixpoint args don't share the same scheme.");
-#     end
-# end
+"""
+Overload hcat function to handle horizontal concatenation of FixpointArray.
+Requires that schemes match.
+"""
+function Base.hcat(f_1 :: FixpointArray{N}, f_2 :: FixpointArray{N}) :: FixpointArray where {N}
+    #Check schemes match:
+    if f_1.scheme == f_2.scheme
+        data = hcat(f_1.data,f_2.data)
+        return FixpointArray{ndims(data)}(data,f_1.scheme);
+    else
+        error("FixpointArray args don't share the same scheme.");
+    end
+end
 
-# """
-# Overload hcat function to handle horizontal concatenation of CFixpoint types.
-# Requires that schemes match.
-# """
-# function Base.hcat(cf_1 :: CFixpoint, cf_2 :: CFixpoint) :: CFixpoint 
-#     #Check real schemes match - imag will match:
-#     if cf_1.real.scheme == cf_2.real.scheme
-#         return CFixpoint(hcat(cf_1.real,cf_2.real), hcat(cf_1.imag,cf_2.imag));
-#     else
-#         error("CFixpoint args don't share the same scheme.");
-#     end
-# end
+"""
+Overload hcat function to handle horizontal concatenation of CFixpointArray.
+Requires that schemes match.
+"""
+function Base.hcat(cf_1 :: CFixpointArray{N}, cf_2 :: CFixpointArray{N}) :: CFixpointArray{N} where {N}
+    #Check real schemes match - imag will match:
+    if cf_1.real.scheme == cf_2.real.scheme
+        real = hcat(cf_1.real,cf_2.real)
+        return CFixpointArray{ndims(real)}(real, hcat(cf_1.imag,cf_2.imag));
+    else
+        error("CFixpointArray args don't share the same scheme.");
+    end
+end
 
 # """
 # Overload lastindex function to handle slicing of Fixpoint with end
