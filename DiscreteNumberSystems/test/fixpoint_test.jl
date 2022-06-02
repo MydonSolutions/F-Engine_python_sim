@@ -34,10 +34,9 @@ f_add = f_val1 + f_val2;
 @test isapprox(float(f_scalar + f_scalar), scalar + scalar, atol=0.0001)
 @test isapprox(float(f_add), ideal_add, atol=0.0001)
 
-# #Test multiplication
-# ideal_mul = val1 .* val2;
-# f_mul = f_val1 * f_val2; 
-# @test any(abs.(toFloat(f_mul)-ideal_mul) .< 0.0001)
+#Test multiplication
+@test isapprox(float(f_scalar * f_scalar), scalar * scalar, atol=0.0001)
+@test isapprox(float(f_val1 * f_val2), val1 .* val2, atol=0.0001)
 
 # #Test summing the vectors
 # ideal_sum=sum(val1,dims=1)  

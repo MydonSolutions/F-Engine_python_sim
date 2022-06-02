@@ -260,37 +260,69 @@ end
 #     return CFixpoint(r_sum_val,i_sum_val);
 # end
 
-# """
-# Overload * function to take Fixpoint type arrays as arguments.
-        
-# See also: [`*`](@ref)
-# """
-# function *(a :: Fixpoint, b :: Fixpoint) :: Fixpoint
-#     prod_val = a.data .* b.data;
-#     bits = a.scheme.bits + b.scheme.bits;
-#     fraction = a.scheme.fraction + b.scheme.fraction;
-#     unsigned = a.scheme.unsigned & b.scheme.unsigned;
-#     scheme = FixpointScheme(bits, fraction, unsigned=unsigned, 
-#     ovflw_behav=a.scheme.ovflw_behav, undflw_behav=a.scheme.undflw_behav);
-#     return Fixpoint(prod_val,scheme);
-# end
+"""
+Overload * function to take Fixpoint arguments.
 
-# """
-# Overload * function to take CFixpoint type arrays as arguments.
+See also: [`*`](@ref)
+"""
+function *(a :: Fixpoint, b :: Fixpoint) :: Fixpoint
+    prod_val = a.data * b.data;
+    bits = a.scheme.bits + b.scheme.bits;
+    fraction = a.scheme.fraction + b.scheme.fraction;
+    unsigned = a.scheme.unsigned & b.scheme.unsigned;
+    scheme = FixpointScheme(bits, fraction, unsigned=unsigned, 
+    ovflw_behav=a.scheme.ovflw_behav, undflw_behav=a.scheme.undflw_behav);
+    return Fixpoint(prod_val,scheme);
+end
 
-# See also: [`*`](@ref)
-# """
-# function *(a :: CFixpoint, b :: CFixpoint) :: CFixpoint
-#     function cmult(a, b, c, d)
-#         # Real part x = a*c - b*d
-#         x = (a*c)-(b*d);
-#         # Imaginary part y = a*d + b*c
-#         y = (a*d)+(b*c);
-#         return x, y;
-#     end
-#     out_real, out_imag = cmult(a.real, a.imag, b.real, b.imag);
-#     return CFixpoint(out_real, out_imag); 
-# end
+"""
+Overload * function to take FixpointArray arguments.
+
+See also: [`*`](@ref)
+"""
+function *(a :: FixpointArray{N}, b :: FixpointArray{N}) :: FixpointArray{N} where {N}
+    prod_val = a.data .* b.data;
+    bits = a.scheme.bits + b.scheme.bits;
+    fraction = a.scheme.fraction + b.scheme.fraction;
+    unsigned = a.scheme.unsigned & b.scheme.unsigned;
+    scheme = FixpointScheme(bits, fraction, unsigned=unsigned, 
+    ovflw_behav=a.scheme.ovflw_behav, undflw_behav=a.scheme.undflw_behav);
+    return FixpointArray{N}(prod_val,scheme);
+end
+
+"""
+Overload * function to take CFixpoint arguments.
+
+See also: [`*`](@ref)
+"""
+function *(a :: CFixpoint, b :: CFixpoint) :: CFixpoint
+    function cmult(a, b, c, d)
+        # Real part x = a*c - b*d
+        x = (a*c)-(b*d);
+        # Imaginary part y = a*d + b*c
+        y = (a*d)+(b*c);
+        return x, y;
+    end
+    out_real, out_imag = cmult(a.real, a.imag, b.real, b.imag);
+    return CFixpoint(out_real, out_imag); 
+end
+
+"""
+Overload * function to take CFixpointArray arguments.
+
+See also: [`*`](@ref)
+"""
+function *(a :: CFixpointArray{N}, b :: CFixpointArray{N}) :: CFixpointArray{N} where {N}
+    function cmult(a, b, c, d)
+        # Real part x = a*c - b*d
+        x = (a*c)-(b*d);
+        # Imaginary part y = a*d + b*c
+        y = (a*d)+(b*c);
+        return x, y;
+    end
+    out_real, out_imag = cmult(a.real, a.imag, b.real, b.imag);
+    return CFixpointArray{N}(out_real, out_imag); 
+end
 
 """
 Overload + function to take Fixpoint arguments.
