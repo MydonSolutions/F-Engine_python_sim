@@ -11,21 +11,20 @@ FixpointArray testing.
 f_scheme_1 = FixpointScheme(18,17);
 f_scheme_2 = FixpointScheme(12,13);
 
-#Create our floating point vectors:
+#Create our floating point values:
+scalar = 0.14159265
 v1 = [0.15566998822, 0.0001, 0.45];
 v2 = [0.333222111991, 0.3344888, 0.779]
 val1 = [0.15566998822 0.0001 0.45; 0.119 0.55 0.37711];
 val2 = [0.333222111991 0.3344888 0.779; 0.123 0.6622 0.4621];
 
 #Cast them to fixed point using the above scheme
+f_scalar = Fixpoint(scalar, f_scheme_1)
 f_val1 = FixpointArray{ndims(val1)}(val1,f_scheme_1);
 f_val2 = FixpointArray{ndims(val2)}(val2,f_scheme_1);
 
-scalar = 0.14159265
-f_scalar = Fixpoint(scalar, f_scheme_1)
-@test isapprox(float(f_scalar), scalar, atol=0.0001)
-
 #Test Fixpoint conversion
+@test isapprox(float(f_scalar), scalar, atol=0.0001)
 @test isapprox(float(f_val1), val1, atol=0.0001)
 @test isapprox(float(f_val2), val2, atol=0.0001)
 
