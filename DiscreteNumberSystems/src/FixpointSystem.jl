@@ -380,33 +380,61 @@ function +(a :: CFixpointArray{N}, b :: CFixpointArray{N}) :: CFixpointArray{N} 
     return CFixpointArray{N}(r_sum, i_sum);
 end
 
-# """
-# Overload - function to take Fixpoint type arrays as arguments.
+"""
+Overload - function to take Fixpoint arguments.
         
-# See also: [`-`](@ref)
-# """
-# function -(a :: Fixpoint, b :: Fixpoint) :: Fixpoint
-#     if (a.scheme.scale != b.scheme.scale)
-#         error("Subtraction performed between two Fixpoint values of differing scales.");
-#     end 
-#     sub_val = a.data .- b.data;
-#     bits = max(a.scheme.bits,b.scheme.bits) + 1;
-#     unsigned = a.scheme.unsigned & b.scheme.unsigned;
-#     scheme = FixpointScheme(bits, a.scheme.fraction, unsigned=unsigned, 
-#     ovflw_behav=a.scheme.ovflw_behav, undflw_behav=a.scheme.undflw_behav);
-#     return Fixpoint(sub_val,scheme);
-# end
+See also: [`-`](@ref)
+"""
+function -(a :: Fixpoint, b :: Fixpoint) :: Fixpoint
+    if (a.scheme.scale != b.scheme.scale)
+        error("Subtraction performed between two Fixpoint values of differing scales.");
+    end 
+    sub_val = a.data - b.data;
+    bits = max(a.scheme.bits,b.scheme.bits) + 1;
+    unsigned = a.scheme.unsigned & b.scheme.unsigned;
+    scheme = FixpointScheme(bits, a.scheme.fraction, unsigned=unsigned, 
+    ovflw_behav=a.scheme.ovflw_behav, undflw_behav=a.scheme.undflw_behav);
+    return Fixpoint(sub_val,scheme);
+end
 
-# """
-# Overload - function to take CFixpoint type arrays as arguments.
+"""
+Overload - function to take FixpointArray arguments.
         
-# See also: [`-`](@ref)
-# """
-# function -(a :: CFixpoint, b :: CFixpoint) :: CFixpoint
-#     r_sub = a.real - b.real;
-#     i_sub = a.imag - b.imag;
-#     return CFixpoint(r_sub, i_sub);
-# end
+See also: [`-`](@ref)
+"""
+function -(a :: FixpointArray{N}, b :: FixpointArray{N}) :: FixpointArray{N} where {N}
+    if (a.scheme.scale != b.scheme.scale)
+        error("Subtraction performed between two Fixpoint values of differing scales.");
+    end 
+    sub_val = a.data .- b.data;
+    bits = max(a.scheme.bits,b.scheme.bits) + 1;
+    unsigned = a.scheme.unsigned & b.scheme.unsigned;
+    scheme = FixpointScheme(bits, a.scheme.fraction, unsigned=unsigned, 
+    ovflw_behav=a.scheme.ovflw_behav, undflw_behav=a.scheme.undflw_behav);
+    return FixpointArray{N}(sub_val,scheme);
+end
+
+"""
+Overload - function to take CFixpoint arguments.
+        
+See also: [`-`](@ref)
+"""
+function -(a :: CFixpoint, b :: CFixpoint) :: CFixpoint
+    r_sub = a.real - b.real;
+    i_sub = a.imag - b.imag;
+    return CFixpoint(r_sub, i_sub);
+end
+
+"""
+Overload - function to take CFixpointArray arguments.
+        
+See also: [`-`](@ref)
+"""
+function -(a :: CFixpointArray{N}, b :: CFixpointArray{N}) :: CFixpointArray{N} where {N}
+    r_sub = a.real - b.real;
+    i_sub = a.imag - b.imag;
+    return CFixpointArray{N}(r_sub, i_sub);
+end
 
 # """
 # Returns power of the Fixpoint value given = f.data * f.data.

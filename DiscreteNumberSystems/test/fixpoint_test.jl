@@ -39,10 +39,9 @@ f_val2 = FixpointArray{ndims(val2)}(val2,f_scheme_1);
 #Test summing the vectors
 @test isapprox(float(sum(f_val1,dims=1)), sum(val1,dims=1), atol=0.0001)
 
-# #Test subtracting the vectors
-# ideal_sub = val1 .- val2;
-# f_sub = f_val1 - f_val2;
-# @test any(abs.(toFloat(f_sub)-ideal_sub) .< 0.0001)
+#Test subtracting the vectors
+@test isapprox(float(f_scalar - f_scalar), scalar - scalar, atol=0.0001)
+@test isapprox(float(f_val1 - f_val2), val1 .- val2, atol=0.0001)
 
 # #Test right shifting the vector values
 # ideal_rshift = f_val1.data .>> 1;
