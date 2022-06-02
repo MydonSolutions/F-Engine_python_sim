@@ -51,10 +51,13 @@ ideal_rshift = f_val1.data .>> 1;
 f_rshift = f_val1 >> 1;
 @test isapprox(f_rshift.data, ideal_rshift, atol=0.0001)
 
-# #Test left shifting the vector values
-# ideal_lshift = f_val1.data .<< 1;
-# f_lshift = f_val1 << 1;
-# @test any(abs.(f_lshift.data-ideal_lshift) .< 0.0001)
+#Test left shifting the vector values
+ideal_lshift_scalar = f_scalar.data .>> 1;
+f_lshift_scalar = f_scalar >> 1;
+@test isapprox(f_lshift_scalar.data, ideal_lshift_scalar, atol=1.0)
+ideal_lshift = f_val1.data .<< 1;
+f_lshift = f_val1 << 1;
+@test isapprox(f_lshift.data, ideal_lshift, atol=0.0001)
 
 # #Test hcat of Fixpoint values
 # ideal_hcat = hcat(val1,val2)

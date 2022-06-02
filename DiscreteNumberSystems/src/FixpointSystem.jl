@@ -760,30 +760,52 @@ function >>(cfxpt :: CFixpointArray{N}, steps :: Integer) :: CFixpointArray{N} w
     return CFixpointArray{N}(t_real, t_imag);
 end
 
-# """
-# Overload << function for Fixpoint args.
-# Apply 'steps' (>=0) left shifts to fxpt.
-# See also: [`<<`](@ref)
-# """
-# function <<(fxpt :: Fixpoint, steps :: Integer) :: Fixpoint
-#     t_fxpt = copy(fxpt);
-#     if (steps < 0)
-#         error("Integer value for steps must be greater than or equal to zero.");
-#     else    
-#         t_fxpt.data .<<= steps;
-#     end
-#     return t_fxpt;
-# end
+"""
+Overload << for Fixpoint.
+Apply 'steps' (>=0) left shifts to fxpt.
+See also: [`<<`](@ref)
+"""
+function <<(fxpt :: Fixpoint, steps :: Integer) :: Fixpoint
+    if (steps < 0)
+        error("Integer value for steps must be greater than or equal to zero.");
+    else    
+        return Fixpoint(fxpt.data << steps, fxpt.scheme);
+    end
+end
 
-# """
-# Overload << function for Fixpoint args.
-# Apply 'steps' (>=0) left shifts to fxpt.
-# See also: [`<<`](@ref)
-# """
-# function <<(cfxpt :: CFixpoint, steps :: Integer) :: CFixpoint
-#     t_real = cfxpt.real << steps;
-#     t_imag = cfxpt.imag << steps;
-#     return CFixpoint(t_real,t_imag);
-# end
+"""
+Overload << for FixpointArray.
+Apply 'steps' (>=0) left shifts to fxpt.
+See also: [`<<`](@ref)
+"""
+function <<(fxpt :: FixpointArray{N}, steps :: Integer) :: FixpointArray{N} where {N}
+    if (steps < 0)
+        error("Integer value for steps must be greater than or equal to zero.");
+    else    
+        return FixpointArray{N}(fxpt.data .<< steps, fxpt.scheme);
+    end
+end
+
+"""
+Overload << for CFixpoint.
+Apply 'steps' (>=0) left shifts to fxpt.
+See also: [`<<`](@ref)
+"""
+function <<(cfxpt :: CFixpoint, steps :: Integer) :: CFixpoint
+    t_real = cfxpt.real << steps;
+    t_imag = cfxpt.imag << steps;
+    return CFixpoint(t_real,t_imag);
+end
+
+"""
+Overload << for CFixpointArray.
+Apply 'steps' (>=0) left shifts to fxpt.
+See also: [`<<`](@ref)
+"""
+function <<(cfxpt :: CFixpointArray{N}, steps :: Integer) :: CFixpointArray{N} where {N}
+    t_real = cfxpt.real << steps;
+    t_imag = cfxpt.imag << steps;
+    return CFixpointArray{N}(t_real,t_imag);
+end
 
 end # Fixpoint module
