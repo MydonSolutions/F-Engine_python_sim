@@ -43,10 +43,13 @@ f_val2 = FixpointArray{ndims(val2)}(val2,f_scheme_1);
 @test isapprox(float(f_scalar - f_scalar), scalar - scalar, atol=0.0001)
 @test isapprox(float(f_val1 - f_val2), val1 .- val2, atol=0.0001)
 
-# #Test right shifting the vector values
-# ideal_rshift = f_val1.data .>> 1;
-# f_rshift = f_val1 >> 1;
-# @test any(abs.(f_rshift.data-ideal_rshift) .< 0.0001)
+#Test right shifting the vector values
+ideal_rshift_scalar = f_scalar.data .>> 1;
+f_rshift_scalar = f_scalar >> 1;
+@test isapprox(f_rshift_scalar.data, ideal_rshift_scalar, atol=1.0)
+ideal_rshift = f_val1.data .>> 1;
+f_rshift = f_val1 >> 1;
+@test isapprox(f_rshift.data, ideal_rshift, atol=0.0001)
 
 # #Test left shifting the vector values
 # ideal_lshift = f_val1.data .<< 1;

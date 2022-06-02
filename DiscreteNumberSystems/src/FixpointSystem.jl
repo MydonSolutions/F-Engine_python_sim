@@ -708,40 +708,57 @@ end
 # #######################################################################################
 # # Logical operator functions
 # #######################################################################################
-# """
-# Overload >> function for Fixpoint args.
-# Apply 'steps' (>=0) right shifts to fxpt. Cannot use >> operator here since we must control rounding.
+"""
+Overload >> for Fixpoint.
+Apply 'steps' (>=0) right shifts to fxpt. Cannot use >> operator here since we must control rounding.
 
-# See also: [`>>`](@ref)
-# """
-# function >>(fxpt :: Fixpoint, steps :: Integer) :: Fixpoint
-#     if (steps < 0)
-#         error("Integer value for steps must be greater than or equal to zero.");
-#     else
-#         if (fxpt.scheme.undflw_behav == "ROUND_EVEN")
-#             rnd_behav = RoundNearest;
-#         elseif (fxpt.scheme.undflw_behav =="ROUND_AWAY")
-#             rnd_behav = RoundNearestTiesAway;
-#         elseif (fxpt.scheme.undflw_behav =="TRUNCATE")
-#             rnd_behav = RoundToZero;
-#         else
-#             error("No recognisable rounding method specified");
-#         end
-#         return Fixpoint(round.(Integer, fxpt.data/(2^steps),rnd_behav),fxpt.scheme);
-#     end
-# end
+See also: [`>>`](@ref)
+"""
+function >>(fxpt :: Fixpoint, steps :: Integer) :: Fixpoint
+    if (steps < 0)
+        error("Integer value for steps must be greater than or equal to zero.");
+    else
+        return Fixpoint(round(Integer, fxpt.data/(2^steps), fxpt.scheme.undflw_behav), fxpt.scheme);
+    end
+end
 
-# """
-# Overload >> function for CFixpoint args.
-# Apply 'steps' (>=0) right shifts to cfxpt. Cannot use >> operator here since we must control rounding.
+"""
+Overload >> for FixpointArray.
+Apply 'steps' (>=0) right shifts to fxpt. Cannot use >> operator here since we must control rounding.
 
-# See also: [`>>`](@ref)
-# """
-# function >>(cfxpt :: CFixpoint, steps :: Integer) :: CFixpoint
-#     t_real = cfxpt.real >> steps;
-#     t_imag = cfxpt.imag >> steps;
-#     return CFixpoint(t_real, t_imag);
-# end
+See also: [`>>`](@ref)
+"""
+function >>(fxpt :: FixpointArray{N}, steps :: Integer) :: FixpointArray{N} where {N}
+    if (steps < 0)
+        error("Integer value for steps must be greater than or equal to zero.");
+    else
+        return FixpointArray{N}(round.(Integer, fxpt.data/(2^steps), fxpt.scheme.undflw_behav), fxpt.scheme);
+    end
+end
+
+"""
+Overload >> for CFixpoint.
+Apply 'steps' (>=0) right shifts to cfxpt. Cannot use >> operator here since we must control rounding.
+
+See also: [`>>`](@ref)
+"""
+function >>(cfxpt :: CFixpoint, steps :: Integer) :: CFixpoint
+    t_real = cfxpt.real >> steps;
+    t_imag = cfxpt.imag >> steps;
+    return CFixpoint(t_real, t_imag);
+end
+
+"""
+Overload >> for CFixpointArray.
+Apply 'steps' (>=0) right shifts to cfxpt. Cannot use >> operator here since we must control rounding.
+
+See also: [`>>`](@ref)
+"""
+function >>(cfxpt :: CFixpointArray{N}, steps :: Integer) :: CFixpointArray{N} where {N}
+    t_real = cfxpt.real >> steps;
+    t_imag = cfxpt.imag >> steps;
+    return CFixpointArray{N}(t_real, t_imag);
+end
 
 # """
 # Overload << function for Fixpoint args.
