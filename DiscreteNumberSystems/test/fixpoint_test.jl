@@ -21,6 +21,10 @@ val2 = [0.333222111991 0.3344888 0.779; 0.123 0.6622 0.4621];
 f_val1 = FixpointArray{ndims(val1)}(val1,f_scheme_1);
 f_val2 = FixpointArray{ndims(val2)}(val2,f_scheme_1);
 
+scalar = 0.14159265
+f_scalar = Fixpoint(scalar, f_scheme_1)
+@test abs.(float(f_scalar)-scalar) .< 0.001
+
 #Test Fixpoint conversion
 @test any(abs.(float(f_val1)-val1) .< 0.0001)
 @test any(abs.(float(f_val2)-val2) .< 0.0001)
