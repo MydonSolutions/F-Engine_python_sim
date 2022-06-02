@@ -430,6 +430,13 @@ function Base.size(f::FixpointArray{N}) where {N}
 end
 
 """
+Overload size() function to accept CFixpoint.
+"""
+function Base.size(cf::CFixpoint)
+    return size(cf.data);
+end
+
+"""
 Overload size() function to accept CFixpointArray.
 """
 function Base.size(cf::CFixpointArray{N}) where {N}
