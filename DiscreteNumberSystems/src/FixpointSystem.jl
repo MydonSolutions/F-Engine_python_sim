@@ -415,19 +415,26 @@ end
 #     return CFixpoint(copy(cf.real),copy(cf.imag));
 # end
 
-# """
-# Overload size() function to accept Fixpoint.
-# """
-# function Base.size(f::Fixpoint)
-#     return size(f.data);
-# end
+"""
+Overload size() function to accept Fixpoint.
+"""
+function Base.size(f::Fixpoint)
+    return size(f.data);
+end
 
-# """
-# Overload size() function to accept CFixpoint.
-# """
-# function Base.size(cf::CFixpoint)
-#     return size(cf.real);
-# end
+"""
+Overload size() function to accept FixpointArray.
+"""
+function Base.size(f::FixpointArray{N}) where {N}
+    return size(f.data);
+end
+
+"""
+Overload size() function to accept CFixpointArray.
+"""
+function Base.size(cf::CFixpointArray{N}) where {N}
+    return size(cf.real);
+end
 
 # """
 # Overload length() function to accept Fixpoint
