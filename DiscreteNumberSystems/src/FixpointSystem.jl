@@ -472,37 +472,23 @@ end
 # # https://docs.julialang.org/en/v1/manual/interfaces/
 # #######################################################################################
 
-# """
-# Overload getindex function for accessing data elements out Fixpoint type.
-# """
-# function Base.getindex(f :: Fixpoint, i :: Int)
-#     return Fixpoint(f.data[i],f.scheme);
-# end
+"""
+Overload getindex function for accessing data elements out Fixpoint type.
+"""
+Base.@inline function Base.getindex(f :: FixpointArray{N}, i :: Vararg{Int, N}) where {N}
+    @boundscheck checkbounds(f.data, i...);
+	@inbounds data = getindex(f.data, i...);
+	length(data) == 1 ? Fixpoint(data, f.scheme) : FixpointArray(data, f.scheme);
+end
 
-# """
-# Overload getindex function for accessing data elements out CFixpoint type.
-# """
-# function Base.getindex(cf :: CFixpoint, i :: Int)
-#     return CFixpoint(cf.real[i],cf.imag[i]);
-# end
-
-# """
-# Overload getindex function for accessing data elements out Fixpoint type. This 
-# overload provides a fall back to the one above in the instance that the Fixpoint is
-# indexed with a multidimensional set of indices
-# """
-# function Base.getindex(f :: Fixpoint, I...)
-#     return f[I]
-# end
-
-# """
-# Overload getindex function for accessing data elements out CFixpoint type. This 
-# overload provides a fall back to the one above in the instance that the Fixpoint is
-# indexed with a multidimensional set of indices
-# """
-# function Base.getindex(cf :: CFixpoint, I...)
-#     return cf[I]
-# end
+"""
+Overload getindex function for accessing data elements out CFixpoint type.
+"""
+Base.@inline function Base.getindex(cf :: CFixpointArray{N}, i :: Vararg{Int, N}) where {N}
+    @boundscheck checkbounds(cf.data, i...);
+	@inbounds data = getindex(cf.data, i...);
+	length(data) == 1 ? CFixpoint(data, cf.scheme) : CFixpointArray(data, cf.scheme);
+end
 
 # """
 # Overload setindex function for setting data elements out Fixpoint type.
