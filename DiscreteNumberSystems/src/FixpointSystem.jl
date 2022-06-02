@@ -606,9 +606,9 @@ end
 Overload getindex function for accessing data elements out CFixpoint type.
 """
 Base.@inline function Base.getindex(cf :: CFixpointArray{N}, i :: Vararg{Int, N}) where {N}
-    @boundscheck checkbounds(cf.data, i...);
-	@inbounds data = getindex(cf.data, i...);
-	length(data) == 1 ? CFixpoint(data, cf.scheme) : CFixpointArray(data, cf.scheme);
+    @boundscheck checkbounds(cf.real, i...);
+	@inbounds rdata, idata = getindex(CA.real, i...), getindex(CA.imag, i...)
+	length(rdata) == 1 ? CFixpoint(rdata, idata) : CFixpointArray(rdata, idata);
 end
 
 # """
