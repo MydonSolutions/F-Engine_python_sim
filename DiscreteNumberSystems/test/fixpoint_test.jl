@@ -9,7 +9,7 @@ FixpointArray testing.
 """
 #Create our scheme:
 f_scheme_1 = FixpointScheme(18,17);
-f_scheme_2 = FixpointScheme(12,13);
+f_scheme_2 = FixpointScheme(13,12);
 
 #Create our floating point values:
 scalar = 0.14159265
@@ -64,8 +64,8 @@ ideal_hcat = hcat(val1,val2)
 f_hcat = hcat(f_val1,f_val2)
 @test isapprox(float(f_hcat), ideal_hcat, atol=0.0001)
 
-# #Test quantise of Fixpoint values
-# @test any(abs.(toFloat(quantise(f_val1,f_scheme_2))-val1) .< 0.0001)
+#Test quantise of Fixpoint values
+@test isapprox(float(quantise(f_val1,f_scheme_2)), val1, atol=0.001)
 
 # #Test slicing
 # sliced_f_val1=f_val1[1:end-1]

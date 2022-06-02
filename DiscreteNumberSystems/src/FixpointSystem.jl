@@ -496,19 +496,19 @@ function clamp_wrap(f :: Fixpoint, min :: Integer, max :: Integer) ::Fixpoint
     return Fixpoint(clamp_val,scheme);        
 end
 
-# """
-# Requantise the data contained in fxpt according to the new scheme provided.
-# """
-# function quantise(fxpt :: Fixpoint, scheme :: FixpointScheme) :: Fixpoint
-#     return fromFloat(toFloat(fxpt), scheme);
-# end
+"""
+Requantise the data contained in fxpt according to the new scheme provided.
+"""
+function quantise(fxpt :: FixpointArray{N}, scheme :: FixpointScheme) :: FixpointArray{N} where {N}
+    return FixpointArray{N}(float(fxpt), scheme);
+end
 
-# """
-# Requantise the data contained in cfxpt according to the new scheme provided.
-# """
-# function quantise(cfxpt :: CFixpoint, scheme :: FixpointScheme) :: CFixpoint
-#     return fromComplex(toComplex(cfxpt),scheme);
-# end
+"""
+Requantise the data contained in cfxpt according to the new scheme provided.
+"""
+function quantise(cfxpt :: CFixpointArray{N}, scheme :: FixpointScheme) :: CFixpointArray{N} where {N}
+    return CFixpointArray{N}(float(cfxpt),scheme);
+end
 
 # """
 # Overload copy() function to copy Fixpoint by value as opposed to reference.
