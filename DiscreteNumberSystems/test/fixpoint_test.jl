@@ -2,7 +2,7 @@ using Test
 using Base: abs
 using Pkg
 Pkg.activate("./DiscreteNumberSystems")
-print(Pkg.status())
+
 using DiscreteNumberSystems.FixpointSystem
 """
 FixpointArray testing. 
@@ -22,14 +22,13 @@ f_val1 = FixpointArray{ndims(val1)}(val1,f_scheme_1);
 f_val2 = FixpointArray{ndims(val2)}(val2,f_scheme_1);
 
 #Test Fixpoint conversion
-convert(Type{Array{Float64,2}},f_val1)
-convert(Type{Array{Float64,2}},f_val2)
-
+@test any(abs.(float(f_val1)-val1) .< 0.0001)
+@test any(abs.(float(f_val2)-val2) .< 0.0001)
 
 # #Test adding
-# ideal_add = val1 .+ val2;
-# f_add = f_val1 + f_val2;
-# @test any(abs.(toFloat(f_add)-ideal_add) .< 0.0001)
+ideal_add = val1 .+ val2;
+f_add = f_val1 + f_val2;
+@test any(abs.(float(f_add)-ideal_add) .< 0.0001)
 
 # #Test multiplication
 # ideal_mul = val1 .* val2;
