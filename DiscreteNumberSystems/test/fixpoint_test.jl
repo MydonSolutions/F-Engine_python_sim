@@ -71,16 +71,17 @@ f_hcat = hcat(f_val1,f_val2)
 sliced_f_val1 = f_val1[2:end-1]
 sliced_f_val1[:] = f_val1[1:end-2]
  
-# """
-# CFixpointArray testing
-# """
-# cf_val1 = fromComplex(val1,val2, f_scheme_1);
-# cf_val2 = fromComplex(val2, val1, f_scheme_1);
-# c_val1 = val1 + val2*im;
-# c_val2 = val2 + val1*im;
+"""
+CFixpointArray testing
+"""
+cf_val1 = CFixpointArray{ndims(f_val1)}(f_val1.data, f_val2.data, f_scheme_1);
+cf_val2 = CFixpointArray{ndims(f_val1)}(f_val2, f_val1);
+c_val1 = val1 + val2*im;
+c_val2 = val2 + val1*im;
 
-# #Test conversion complex -> CFixpoint works
-# @test any(Base.convert(Array{ComplexF64,N},cf_val1) != c_val1);
+#Test conversion complex -> CFixpoint works
+@test isapprox(float(cf_val2), c_val2, atol=0.0001);
+@test isapprox(float(cf_val1), c_val1, atol=0.0001);
 
 # #Test addition of CFixpoint types
 # c_add = cf_val1 + cf_val2;

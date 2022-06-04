@@ -81,9 +81,10 @@ end
 Overload the Base.convert function to convert from Fixpoint to Real. This process discards
 the scheme, only returning the floating point value.
 """
-function Base.convert(float::Type{<:Real},f::Fixpoint)::Float64
+function Base.convert(float::Type{<:Real},f::Fixpoint) :: Float64
     return float(f.data)/f.scheme.scale;
 end
+
 """
 Convenience function to convert from Fixpoint to a Float64.
 """
@@ -108,6 +109,7 @@ struct FixpointArray{N} <: AbstractArray{Integer,N}
         new(map(d -> Fixpoint(d, scheme).data, fl_data), scheme)
     end
 end
+
 """
 Overload the Base.convert function to convert from FixpointArray{N} to Array{Real,N}. This process discards
 the scheme, only returning the floating point array.
@@ -115,6 +117,7 @@ the scheme, only returning the floating point array.
 function Base.convert(float_arr::Type{<:Array{<:Real,N}},f_arr::FixpointArray{N}) where {N}
     return convert(float_arr,f_arr.data)./f_arr.scheme.scale
 end
+
 """
 Convenience function to convert from FixpointArray to an array of Float64.
 """
@@ -147,16 +150,18 @@ end
 Overload the Base.convert function to convert from CFixpoint to Complex. This process discards
 the scheme, only returning the complex point value.
 """
-function Base.convert(complex::Type{ComplexF64},cf::CFixpoint)::Type{ComplexF64}
-    return complex(cf.real/cf.scheme.scale + complex((cf.imag/cf.scheme.scale)im))
+function Base.convert(complex::Type{ComplexF64}, cf::CFixpoint):: ComplexF64
+    return complex(cf.real.data)./cf.real.scheme.scale +
+    (complex(cf.imag.data)./cf.imag.scheme.scale .* 1im);
 end
+
 """
-Convenience function to convert from Fixpoint to an array of Float64.
+Convenience function to convert from CFixpoint to an array of Float64.
 """
 function float(cf :: CFixpoint) :: ComplexF64
     return convert(ComplexF64, cf)
 end
-Base.convert(::Type{<:Integer}, cf::CFixpoint) = cf.real + 1im*cf.imag
+Base.convert(::Type{<:Integer}, cf::CFixpoint) = cf.real.data + 1im*cf.imag.data
 
 """
 CFixpointArray is the complex extension of Fixpoint that holds two FixpointArray types (real and imag) as its 
@@ -177,15 +182,19 @@ struct CFixpointArray{N} <:AbstractArray{Complex{<:Integer},N}
        new(real,imag)
     end
 end
+
 """
 Overload the Base.convert function to convert from CFixpointArray{N} to Array{Real,N}. This process discards
 the scheme, only returning the complex floating point array.
 """
-function Base.convert(complex_arr::Type{AbstractArray{ComplexF64,N}},cf_arr::CFixpointArray{N})::Type{Array{ComplexF64,N}} where {N}
-    return convert(complex_arr, cf_arr.real./cf_arr.scheme.scale .+ (convert(complex_arr, cf_arr.imag)./cf_arr.scheme.scale)im)
+function Base.convert(complex_arr::Type{AbstractArray{ComplexF64,N}},cf_arr::CFixpointArray{N}) ::
+                                                         AbstractArray{ComplexF64,N} where {N}                                                    
+    return convert(complex_arr, cf_arr.real.data)./cf_arr.real.scheme.scale .+ 
+    convert(complex_arr, cf_arr.imag.data)./cf_arr.imag.scheme.scale .* 1im;
 end
+
 """
-Convenience function to convert from CFixpointArray to an array of an array of ComplexF64.
+Convenience function to convert from CFixpointArray to an array of ComplexF64.
 """
 function float(cf :: CFixpointArray{N}) :: AbstractArray{ComplexF64,N} where {N}
     return convert(Array{ComplexF64, N}, cf)
@@ -559,19 +568,33 @@ function Base.size(cf::CFixpointArray{N}) where {N}
     return size(cf.real);
 end
 
-# """
-# Overload length() function to accept Fixpoint
-# """
-# function Base.length(f :: Fixpoint)
-#     return prod(size(f))
-# end
+"""
+Overload length() function to accept Fixpoint
+"""
+function Base.length(f :: Fixpoint) :: Integer 
+    return length(f.data)
+end
 
-# """
-# Overload length() function to accept CFixpoint
-# """
-# function Base.length(cf :: CFixpoint)
-#     return prod(size(cf))
-# end
+"""
+Overload length() function to accept FixpointArray
+"""
+function Base.length(f :: FixpointArray{N}) :: Integer where {N}
+    return length(f.data)
+end
+
+"""
+Overload length() function to accept CFixpoint
+"""
+function Base.length(cf :: CFixpoint) :: Integer 
+    return length(cf.data)
+end
+
+"""
+Overload length() function to accept CFixpointArray
+"""
+function Base.length(cf :: CFixpointArray{N}) :: Integer where {N}
+    return length(cf.real.data)
+end
 
 # """
 # Overload show function for printing out Fixpoint summary.
@@ -609,7 +632,7 @@ Overload getindex function for accessing data elements out CFixpoint type.
 """
 Base.@inline function Base.getindex(cf :: CFixpointArray{N}, i :: Vararg{Int, N}) where {N}
     @boundscheck checkbounds(cf.real, i...);
-	@inbounds rdata, idata = getindex(CA.real, i...), getindex(CA.imag, i...)
+	@inbounds rdata, idata = getindex(cf.real, i...), getindex(cf.imag, i...)
 	length(rdata) == 1 ? CFixpoint(rdata, idata) : CFixpointArray(rdata, idata);
 end
 
