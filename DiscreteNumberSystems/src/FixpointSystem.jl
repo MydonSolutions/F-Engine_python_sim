@@ -265,10 +265,10 @@ end
 Overload sum function to take a CFixpointArray argument.
 See also: [`sum`](@ref)
 """
-function Base.sum(cf :: CFixpoint; dims :: Union{Integer,Colon}=:) :: CFixpoint
+function Base.sum(cf :: CFixpointArray{N}; dims :: Union{Integer,Colon}=:) where {N}
     r_sum_val = sum(cf.real,dims=dims);
     i_sum_val = sum(cf.imag,dims=dims);
-    return CFixpoint(r_sum_val,i_sum_val);
+    return length(r_sum_val) == 1 ? CFixpoint(r_sum_val,i_sum_val) : CFixpointArray{N}(r_sum_val, i_sum_val)
 end
 
 """

@@ -98,10 +98,10 @@ c_min = cf_val1 - cf_val2;
 ideal_cmin = c_val1 .- c_val2;
 @test isapprox(float(c_min), ideal_cmin, atol=0.0001)
 
-# #Test summation of CFixpoint types
-# c_sum = sum(cf_val1,dims=1);
-# ideal_csum = sum(c_val1,dims=1);
-# @test any(abs.(toComplex(c_sum) .- ideal_csum) .<0.0001)
+#Test summation of CFixpoint types
+c_sum = sum(cf_val1,dims=1);
+ideal_csum = sum(c_val1,dims=1);
+@test isapprox(float(c_sum), ideal_csum, atol = 0.0001)
 
 # #Test rightshift of CFixpoint types
 # c_rshift = cf_val1 >> 1;
