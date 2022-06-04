@@ -89,14 +89,14 @@ ideal_cadd = c_val1 .+ c_val2;
 @test isapprox(float(c_add), ideal_cadd, atol=0.0001);
 
 # #Test multiplication of CFixpoint types
-# c_mul = cf_val1 * cf_val2;
-# ideal_cmul = c_val1 .* c_val2;
-# @test any(abs.(toComplex(c_mul) .- ideal_cmul) .< 0.0001)
+c_mul = cf_val1 * cf_val2;
+ideal_cmul = c_val1 .* c_val2;
+@test isapprox(float(c_mul), ideal_cmul, atol= 0.0001)
 
 # #Test subtraction of CFixpoint types
 # c_min = cf_val1 - cf_val2;
 # ideal_cmin = c_val1 .- c_val2;
-# @test any(abs.(toComplex(c_min) .- ideal_cmin) .<0.0001)
+# @test isapprox(float(c_min), ideal_cmin, atol=0.0001)
 
 # #Test summation of CFixpoint types
 # c_sum = sum(cf_val1,dims=1);
