@@ -83,10 +83,10 @@ c_val2 = val2 + val1*im;
 @test isapprox(float(cf_val2), c_val2, atol=0.0001);
 @test isapprox(float(cf_val1), c_val1, atol=0.0001);
 
-# #Test addition of CFixpoint types
-# c_add = cf_val1 + cf_val2;
-# ideal_cadd = c_val1 .+ c_val2;
-# @test any(abs.(toComplex(c_add) .- ideal_cadd).< 0.0001)
+#Test addition of CFixpoint types
+c_add = cf_val1 + cf_val2;
+ideal_cadd = c_val1 .+ c_val2;
+@test isapprox(float(c_add), ideal_cadd, atol=0.0001);
 
 # #Test multiplication of CFixpoint types
 # c_mul = cf_val1 * cf_val2;
