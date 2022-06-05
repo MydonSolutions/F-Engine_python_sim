@@ -105,7 +105,13 @@ ideal_csum = sum(c_val1,dims=1);
 
 #Test rightshift of CFixpoint types
 c_rshift = cf_val1 >> 1;
-ideal_rshift_re = cf_val1.real.data .>> 1
-ideal_rshift_im = cf_val1.imag.data .>> 1
-@test any((abs.(c_rshift.real.data .- ideal_rshift_re).-abs.(c_rshift.imag.data .- ideal_rshift_im)) .<0.0001)
+ideal_rshift = (val1 + 1im .* val2)/2;
+@test isapprox(float(c_rshift.real), real(ideal_rshift), atol = 0.0001)
+@test isapprox(float(c_rshift.imag), imag(ideal_rshift), atol = 0.0001)
+
+#Test leftshift of CFixpointArray
+c_lshift = cf_val1 << 2;
+ideal_lshift = (val1 + 1im .* val2)*4;
+@test isapprox(float(c_lshift.real), real(ideal_lshift), atol = 0.0001)
+@test isapprox(float(c_lshift.imag), imag(ideal_lshift), atol = 0.0001)
 
