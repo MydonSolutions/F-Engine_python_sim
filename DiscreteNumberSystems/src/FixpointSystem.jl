@@ -161,7 +161,7 @@ Convenience function to convert from CFixpoint to an array of Float64.
 function float(cf :: CFixpoint) :: ComplexF64
     return convert(ComplexF64, cf)
 end
-Base.convert(::Type{<:Integer}, cf::CFixpoint) = cf.real.data + 1im*cf.imag.data
+Base.convert(::Type{<:Complex{<:Integer}}, cf::CFixpoint) = cf.real.data + 1im*cf.imag.data
 
 """
 CFixpointArray is the complex extension of Fixpoint that holds two FixpointArray types (real and imag) as its 
