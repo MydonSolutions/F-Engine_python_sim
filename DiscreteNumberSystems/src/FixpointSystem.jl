@@ -81,15 +81,15 @@ end
 Overload the Base.convert function to convert from Fixpoint to Real. This process discards
 the scheme, only returning the floating point value.
 """
-function Base.convert(float::Type{<:Real},f::Fixpoint) :: Float64
+function Base.convert(::Type{<:AbstractFloat},f::Fixpoint) :: AbstractFloat
     return float(f.data)/f.scheme.scale;
 end
 
 """
-Convenience function to convert from Fixpoint to a Float64.
+Convenience function to convert from Fixpoint to a AbstractFloat.
 """
-function Base.float(f :: Fixpoint) :: Float64
-    return convert(Float64, f)
+function Base.float(f :: Fixpoint) :: AbstractFloat
+    return convert(AbstractFloat, f)
 end
 
 """
@@ -101,27 +101,27 @@ See also: [`FixpointScheme`](@ref)
 struct FixpointArray{N} <: AbstractArray{Fixpoint,N}
     data :: Array{Integer,N}
     scheme :: FixpointScheme
-    function FixpointArray{N}(data::Array{Integer,N}, scheme::FixpointScheme) where {N}
+    function FixpointArray{N}(data::Array{<:Integer,N}, scheme::FixpointScheme) where {N}
         new(data, scheme)
     end
-    function FixpointArray{N}(fl_data::AbstractArray{<:Real,N}, scheme::FixpointScheme) where {N}
+    function FixpointArray{N}(fl_data::AbstractArray{<:AbstractFloat,N}, scheme::FixpointScheme) where {N}
         new(map(d -> Fixpoint(d, scheme).data, fl_data), scheme)
     end
 end
 
 """
-Overload the Base.convert function to convert from FixpointArray{N} to Array{Real,N}. This process discards
+Overload the Base.convert function to convert from FixpointArray{N} to Array{AbstractFloat,N}. This process discards
 the scheme, only returning the floating point array.
 """
-function Base.convert(float_arr::Type{<:Array{<:Real,N}},f_arr::FixpointArray{N}) where {N}
-    return convert(float_arr,f_arr.data)./f_arr.scheme.scale
+function Base.convert(float_arr::Type{<:Array{<:AbstractFloat,N}},f_arr::FixpointArray{N}) where {N}
+    return convert.(eltype(float_arr),f_arr.data)./f_arr.scheme.scale
 end
 
 """
 Convenience function to convert from FixpointArray to an array of Float64.
 """
-function Base.float(f :: FixpointArray{N}) :: Array{Float64, N} where {N}
-    return convert(Array{Float64, N}, f)
+function Base.float(f :: FixpointArray{N}) :: Array{<:Float64, N} where {N}
+    return convert(Array{<:Float64, N}, f)
 end
 
 """
@@ -149,13 +149,13 @@ end
 Overload the Base.convert function to convert from CFixpoint to Complex. This process discards
 the scheme, only returning the complex point value.
 """
-function Base.convert(complex::Type{ComplexF64}, cf::CFixpoint):: ComplexF64
-    return complex(cf.real.data)./cf.real.scheme.scale +
-    (complex(cf.imag.data)./cf.imag.scheme.scale .* 1im);
+function Base.convert(::Type{<:Complex{<:AbstractFloat}}, cf::CFixpoint)::Complex{<:AbstractFloat}
+    return convert(AbstractFloat, cf.real) +
+        convert(AbstractFloat, cf.imag) * 1im;
 end
 
 """
-Convenience function to convert from CFixpoint to an array of Float64.
+Convenience function to convert from CFixpoint to an array of Complex64.
 """
 function Base.float(cf :: CFixpoint) :: ComplexF64
     return convert(ComplexF64, cf)
@@ -185,18 +185,17 @@ end
 Overload the Base.convert function to convert from CFixpointArray{N} to Array{Real,N}. This process discards
 the scheme, only returning the complex floating point array.
 """
-function Base.convert(complex_arr::Type{AbstractArray{ComplexF64,N}},cf_arr::CFixpointArray{N}) ::
-                                                         AbstractArray{ComplexF64,N} where {N}                                                    
-    return convert(complex_arr, cf_arr.real.data)./cf_arr.real.scheme.scale .+ 
-    convert(complex_arr, cf_arr.imag.data)./cf_arr.imag.scheme.scale .* 1im;
+function Base.convert(complex_arr::Type{AbstractArray{<:Complex{<:AbstractFloat},N}},cf_arr::CFixpointArray{N}) ::
+                                                         AbstractArray{<:Complex{<:AbstractFloat},N} where {N}                                                    
+    return convert(real(eltype(complex_arr)), cf_arr.real) .+ 
+    convert(imag(eltype(complex_arr), cf_arr.imag)) .* 1im;
 end
 
 """
 Convenience function to convert from CFixpointArray to an array of ComplexF64.
 """
-function Base.float(cf :: CFixpointArray{N}) :: AbstractArray{ComplexF64,N} where {N}
-    # return float(cf.real) + 1im * float(cf.imag)
-    return convert(Array{ComplexF64, N}, cf)
+function Base.float(cf :: CFixpointArray{N}) :: Array{ComplexF64,N} where {N}
+    return float(cf.real) + 1im * float(cf.imag)
 end
 
 #########################################################################################
