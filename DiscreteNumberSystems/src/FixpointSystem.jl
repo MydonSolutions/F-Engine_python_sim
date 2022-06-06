@@ -60,7 +60,7 @@ Fixpoint type that accepts a single integer accompanied by a FixpointScheme that
 
 See also: [`FixpointScheme`](@ref)
 """
-struct Fixpoint
+struct Fixpoint <: Number
     data :: Integer
     scheme :: FixpointScheme
     Fixpoint(fx_data::Integer, scheme::FixpointScheme) = new(fx_data,scheme);
@@ -91,7 +91,6 @@ Convenience function to convert from Fixpoint to a Float64.
 function Base.float(f :: Fixpoint) :: Float64
     return convert(Float64, f)
 end
-Base.convert(::Type{<:Integer}, f::Fixpoint) = f.data
 
 """
 FixpointArray type that accepts an integer array accompanied by a FixpointScheme that
@@ -99,13 +98,13 @@ governs it's handling.
 
 See also: [`FixpointScheme`](@ref)
 """
-struct FixpointArray{N} <: AbstractArray{Integer,N}
+struct FixpointArray{N} <: AbstractArray{Fixpoint,N}
     data :: Array{Integer,N}
     scheme :: FixpointScheme
     function FixpointArray{N}(data::Array{Integer,N}, scheme::FixpointScheme) where {N}
         new(data, scheme)
     end
-    function FixpointArray{N}(fl_data::Array{<:Real,N}, scheme::FixpointScheme) where {N}
+    function FixpointArray{N}(fl_data::AbstractArray{<:Real,N}, scheme::FixpointScheme) where {N}
         new(map(d -> Fixpoint(d, scheme).data, fl_data), scheme)
     end
 end
@@ -131,7 +130,7 @@ Real and Imaginary parts.
 
 See also: [`Fixpoint`](@ref)
 """
-struct CFixpoint
+struct CFixpoint <: Number
     real :: Fixpoint
     imag :: Fixpoint
     function CFixpoint(real :: Fixpoint, imag :: Fixpoint)
@@ -158,10 +157,9 @@ end
 """
 Convenience function to convert from CFixpoint to an array of Float64.
 """
-function float(cf :: CFixpoint) :: ComplexF64
+function Base.float(cf :: CFixpoint) :: ComplexF64
     return convert(ComplexF64, cf)
 end
-Base.convert(::Type{<:Complex{<:Integer}}, cf::CFixpoint) = cf.real.data + 1im*cf.imag.data
 
 """
 CFixpointArray is the complex extension of Fixpoint that holds two FixpointArray types (real and imag) as its 
@@ -169,7 +167,7 @@ Real and Imaginary parts.
 
 See also: [`FixpointArray`](@ref)
 """
-struct CFixpointArray{N} <:AbstractArray{Complex{<:Integer},N}
+struct CFixpointArray{N} <:AbstractArray{CFixpoint,N}
     real :: FixpointArray{N}
     imag :: FixpointArray{N}
     function CFixpointArray{N}(real :: Array{<:Integer,N}, imag :: Array{<:Integer,N}, scheme :: FixpointScheme) where {N}
@@ -196,7 +194,8 @@ end
 """
 Convenience function to convert from CFixpointArray to an array of ComplexF64.
 """
-function float(cf :: CFixpointArray{N}) :: AbstractArray{ComplexF64,N} where {N}
+function Base.float(cf :: CFixpointArray{N}) :: AbstractArray{ComplexF64,N} where {N}
+    # return float(cf.real) + 1im * float(cf.imag)
     return convert(Array{ComplexF64, N}, cf)
 end
 
@@ -210,7 +209,7 @@ end
 #     if complex
 #         return fromComplex(zeros(Float64, dims),zeros(Float64, dims),fx_scheme);
 #     else
-#         return fromFloat(zeros(Float64, dims), fx_scheme); 
+#         return fromFloat(zeros(Float64, dims), fx_scheme);
 #     end
 # end
 
@@ -576,24 +575,10 @@ function Base.length(f :: Fixpoint) :: Integer
 end
 
 """
-Overload length() function to accept FixpointArray
-"""
-function Base.length(f :: FixpointArray{N}) :: Integer where {N}
-    return length(f.data)
-end
-
-"""
 Overload length() function to accept CFixpoint
 """
 function Base.length(cf :: CFixpoint) :: Integer 
     return length(cf.data)
-end
-
-"""
-Overload length() function to accept CFixpointArray
-"""
-function Base.length(cf :: CFixpointArray{N}) :: Integer where {N}
-    return length(cf.real.data)
 end
 
 # """
@@ -619,38 +604,82 @@ end
 # #######################################################################################
 
 """
-Overload getindex function for accessing data elements out Fixpoint type.
+Overload non-scalar-indexing getindex function for accessing data elements out Fixpoint type.
 """
-Base.@inline function Base.getindex(f :: FixpointArray{N}, i :: Vararg{Int, N}) where {N}
+Base.@inline function Base.getindex(f :: FixpointArray{N}, i...) :: Union{Fixpoint, FixpointArray} where {N}
     @boundscheck checkbounds(f.data, i...);
 	@inbounds data = getindex(f.data, i...);
-	length(data) == 1 ? Fixpoint(data, f.scheme) : FixpointArray(data, f.scheme);
+	length(data) == 1 ? Fixpoint(data, f.scheme) : FixpointArray{ndims(data)}(data, f.scheme);
 end
 
 """
-Overload getindex function for accessing data elements out CFixpoint type.
+Overload scalar-indexing getindex function for accessing data elements out CFixpoint type.
 """
-Base.@inline function Base.getindex(cf :: CFixpointArray{N}, i :: Vararg{Int, N}) where {N}
+Base.@inline function Base.getindex(cf :: CFixpointArray{N}, i...) :: Union{CFixpoint, CFixpointArray} where {N}
     @boundscheck checkbounds(cf.real, i...);
 	@inbounds rdata, idata = getindex(cf.real, i...), getindex(cf.imag, i...)
-	length(rdata) == 1 ? CFixpoint(rdata, idata) : CFixpointArray(rdata, idata);
+    length(rdata) == 1 ? CFixpoint(rdata, idata) : CFixpointArray{ndims(rdata)}(rdata, idata);
 end
 
 """
-Overload setindex function for setting data elements of FixpointArray type.
+Overload non-scalar setindex! function for setting integer data elements of FixpointArray type.
 """
-Base.@inline function Base.setindex!(f::FixpointArray{N}, v, i::Vararg{Int, N}) where {N}
+Base.@inline function Base.setindex!(f::FixpointArray{N}, v::AbstractArray{<:Integer, M}, i...) where {N, M}
 	@boundscheck checkbounds(f.data, i...)
 	@inbounds setindex!(f.data, v, i...)
 end
 
 """
-Overload setindex function for setting data elements of FixpointArray type.
+Overload non-scalar setindex! function for setting real data elements of FixpointArray type.
 """
-Base.@inline function Base.setindex!(cf::CFixpointArray{N}, v, i::Vararg{Int,N}) where{N}
-	#Assume that real.data has the same bounds as imag.data
-	@boundscheck checkbounds(cf.real.data,i...)
-	@inbounds CFixpointArray{N}(setindex!(cf.real,v.real,i...),setindex!(cf.imag,v.imag,i...))
+Base.@inline function Base.setindex!(f::FixpointArray{N}, v::AbstractArray{<:Real, M}, i...) where {N, M}
+	@boundscheck checkbounds(f.data, i...)
+	@inbounds setindex!(f.data, FixpointArray{ndims(v)}(v, f.scheme).data, i...)
+end
+
+"""
+Overload non-scalar setindex! function for setting Fixpoint elements of FixpointArray type.
+"""
+Base.@inline function Base.setindex!(f::FixpointArray{N}, v::FixpointArray{M}, i...) where {N, M}
+	@boundscheck checkbounds(f.data, i...)
+	@boundscheck checkbounds(v, i...)
+    if f.scheme == v.scheme
+	    @inbounds setindex!(f.data, v.data, i...)
+    else
+	    @inbounds setindex!(f.data, FixpointArray{M}(float(v), f.scheme).data, i...)
+    end
+end
+
+"""
+Overload non-scalar setindex! function for setting integer data elements of CFixpointArray type.
+"""
+Base.@inline function Base.setindex!(cf::CFixpointArray{N}, v::AbstractArray{<:Complex{<:Integer}, M}, i...) where {N, M}
+	@boundscheck checkbounds(cf.real, i...)
+	@inbounds setindex!(cf.real, real(v), i...)
+	@inbounds setindex!(cf.imag, imag(v), i...)
+end
+
+"""
+Overload non-scalar setindex! function for setting real data elements of CFixpointArray type.
+"""
+Base.@inline function Base.setindex!(cf::CFixpointArray{N}, v::AbstractArray{<:Complex{<:AbstractFloat}, M}, i...) where {N, M}
+	@boundscheck checkbounds(cf.real, i...)
+	@inbounds setindex!(cf.real, FixpointArray{ndims(v)}(real(v), cf.real.scheme), i...)
+	@inbounds setindex!(cf.imag, FixpointArray{ndims(v)}(imag(v), cf.real.scheme), i...)
+end
+
+"""
+Overload non-scalar setindex! function for setting CFixpoint elements of CFixpointArray type.
+"""
+Base.@inline function Base.setindex!(cf::CFixpointArray{N}, v::CFixpointArray{M}, i...) where {N, M}
+    if cf.real.scheme == v.real.scheme
+        @boundscheck checkbounds(cf.real, i...)
+	    @inbounds setindex!(cf.real, v.real, i...)
+	    @inbounds setindex!(cf.imag, v.imag, i...)
+    else
+        # invoke setindex!(c::CFixpointArray{N}, ::AbstractArray{<:Complex{<:AbstractFloat}, M}, i...)
+	    @inbounds setindex!(cf, float(v), i...)
+    end
 end
 
 """

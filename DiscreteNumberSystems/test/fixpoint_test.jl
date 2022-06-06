@@ -69,7 +69,14 @@ f_hcat = hcat(f_val1,f_val2)
 
 #Test slicing
 sliced_f_val1 = f_val1[2:end-1]
-sliced_f_val1[:] = f_val1[1:end-2]
+@test typeof(sliced_f_val1) <: FixpointArray
+@test isapprox(float(sliced_f_val1), val1[2:end-1], atol=0.0001)
+sliced_f_val1[:] = f_val1[1:end-2].data
+@test isapprox(float(sliced_f_val1), val1[1:end-2], atol=0.0001)
+sliced_f_val1[:] = f_val1[2:end-1]
+@test isapprox(float(sliced_f_val1), val1[2:end-1], atol=0.0001)
+sliced_f_val1[:] = val2[1:end-2]
+@test isapprox(float(sliced_f_val1), val2[1:end-2], atol=0.0001)
  
 """
 CFixpointArray testing
@@ -115,3 +122,13 @@ ideal_lshift = (val1 + 1im .* val2)*4;
 @test isapprox(float(c_lshift.real), real(ideal_lshift), atol = 0.0001)
 @test isapprox(float(c_lshift.imag), imag(ideal_lshift), atol = 0.0001)
 
+#Test slicing
+sliced_cf_val1 = cf_val1[2:end-1]
+@test typeof(sliced_cf_val1) <: CFixpointArray
+@test isapprox(float(sliced_cf_val1), c_val1[2:end-1], atol=0.0001)
+sliced_cf_val1[:] = cf_val1[1:end-2].real.data + 1im * cf_val1[1:end-2].imag.data
+@test isapprox(float(sliced_cf_val1), c_val1[1:end-2], atol=0.0001)
+sliced_cf_val1[:] = cf_val1[2:end-1]
+@test isapprox(float(sliced_cf_val1), c_val1[2:end-1], atol=0.0001)
+sliced_cf_val1[:] = c_val2[1:end-2]
+@test isapprox(float(sliced_cf_val1), c_val2[1:end-2], atol=0.0001)
