@@ -69,7 +69,7 @@ f_hcat = hcat(f_val1,f_val2)
 
 #Test slicing
 sliced_f_val1 = f_val1[2:end-1]
-@test typeof(sliced_f_val1) <: FixpointArray
+@test isa(sliced_f_val1, FixpointArray)
 @test isapprox(float(sliced_f_val1), val1[2:end-1], atol=0.0001)
 sliced_f_val1[:] = f_val1[1:end-2].data
 @test isapprox(float(sliced_f_val1), val1[1:end-2], atol=0.0001)
@@ -77,10 +77,20 @@ sliced_f_val1[:] = f_val1[2:end-1]
 @test isapprox(float(sliced_f_val1), val1[2:end-1], atol=0.0001)
 sliced_f_val1[:] = val2[1:end-2]
 @test isapprox(float(sliced_f_val1), val2[1:end-2], atol=0.0001)
+
+@test isa(sliced_f_val1[1], Fixpoint)
+sliced_f_val1[1] = f_scalar.data
+@test isapprox(float(sliced_f_val1[1]), scalar, atol=0.0001)
+sliced_f_val1[1] = f_scalar
+@test isapprox(float(sliced_f_val1[1]), scalar, atol=0.0001)
+sliced_f_val1[1] = scalar
+@test isapprox(float(sliced_f_val1[1]), scalar, atol=0.0001)
  
 """
 CFixpointArray testing
 """
+scalar_complex = scalar + 2im*scalar
+cf_scalar = CFixpoint(real(scalar_complex), imag(scalar_complex), f_scheme_1)
 cf_val1 = CFixpointArray{ndims(f_val1)}(f_val1.data, f_val2.data, f_scheme_1);
 cf_val2 = CFixpointArray{ndims(f_val1)}(f_val2, f_val1);
 c_val1 = val1 + val2*im;
@@ -124,7 +134,7 @@ ideal_lshift = (val1 + 1im .* val2)*4;
 
 #Test slicing
 sliced_cf_val1 = cf_val1[2:end-1]
-@test typeof(sliced_cf_val1) <: CFixpointArray
+@test isa(sliced_cf_val1, CFixpointArray)
 @test isapprox(float(sliced_cf_val1), c_val1[2:end-1], atol=0.0001)
 sliced_cf_val1[:] = cf_val1[1:end-2].real.data + 1im * cf_val1[1:end-2].imag.data
 @test isapprox(float(sliced_cf_val1), c_val1[1:end-2], atol=0.0001)
@@ -132,3 +142,11 @@ sliced_cf_val1[:] = cf_val1[2:end-1]
 @test isapprox(float(sliced_cf_val1), c_val1[2:end-1], atol=0.0001)
 sliced_cf_val1[:] = c_val2[1:end-2]
 @test isapprox(float(sliced_cf_val1), c_val2[1:end-2], atol=0.0001)
+
+@test isa(sliced_cf_val1[1], CFixpoint)
+sliced_cf_val1[1] = cf_scalar.real.data + 1im*cf_scalar.imag.data
+@test isapprox(float(sliced_cf_val1[1]), scalar_complex, atol=0.0001)
+sliced_cf_val1[1] = cf_scalar
+@test isapprox(float(sliced_cf_val1[1]), scalar_complex, atol=0.0001)
+sliced_cf_val1[1] = scalar_complex
+@test isapprox(float(sliced_cf_val1[1]), scalar_complex, atol=0.0001)

@@ -612,12 +612,40 @@ Base.@inline function Base.getindex(f :: FixpointArray{N}, i...) :: Union{Fixpoi
 end
 
 """
-Overload scalar-indexing getindex function for accessing data elements out CFixpoint type.
+Overload non-scalar-indexing getindex function for accessing data elements out CFixpoint type.
 """
 Base.@inline function Base.getindex(cf :: CFixpointArray{N}, i...) :: Union{CFixpoint, CFixpointArray} where {N}
     @boundscheck checkbounds(cf.real, i...);
 	@inbounds rdata, idata = getindex(cf.real, i...), getindex(cf.imag, i...)
     length(rdata) == 1 ? CFixpoint(rdata, idata) : CFixpointArray{ndims(rdata)}(rdata, idata);
+end
+
+"""
+Overload scalar setindex function for setting integer data elements of FixpointArray type.
+"""
+Base.@inline function Base.setindex!(f::FixpointArray{N}, v::Integer, i::Vararg{Int, N}) where {N}
+	@boundscheck checkbounds(f.data, i...)
+	@inbounds setindex!(f.data, v, i...)
+end
+
+"""
+Overload scalar setindex function for setting Float data elements of FixpointArray type.
+"""
+Base.@inline function Base.setindex!(f::FixpointArray{N}, v::AbstractFloat, i::Vararg{Int, N}) where {N}
+    @boundscheck checkbounds(f.data, i...)
+    @inbounds setindex!(f.data, Fixpoint(v, f.scheme).data, i...)
+end
+
+"""
+Overload scalar setindex function for setting Fixpoint data elements of FixpointArray type.
+"""
+Base.@inline function Base.setindex!(f::FixpointArray{N}, v::Fixpoint, i::Vararg{Int, N}) where {N}
+    @boundscheck checkbounds(f.data, i...)
+    if f.scheme == v.scheme
+        @inbounds setindex!(f.data, v.data, i...)
+    else
+        @inbounds setindex!(f.data, Fixpoint(float(v), f.scheme).data, i...)
+    end
 end
 
 """
@@ -650,7 +678,39 @@ Base.@inline function Base.setindex!(f::FixpointArray{N}, v::FixpointArray{M}, i
 end
 
 """
-Overload non-scalar setindex! function for setting integer data elements of CFixpointArray type.
+Overload scalar setindex function for setting integer data elements of CFixpointArray type.
+"""
+Base.@inline function Base.setindex!(cf::CFixpointArray{N}, v::Complex{<:Integer}, i::Vararg{Int, N}) where {N}
+	@boundscheck checkbounds(cf.real.data, i...)
+	@inbounds setindex!(cf.real.data, real(v), i...)
+	@inbounds setindex!(cf.imag.data, imag(v), i...)
+end
+
+"""
+Overload scalar setindex function for setting Float data elements of CFixpointArray type.
+"""
+Base.@inline function Base.setindex!(cf::CFixpointArray{N}, v::Complex{<:AbstractFloat}, i::Vararg{Int, N}) where {N}
+    @boundscheck checkbounds(cf.real.data, i...)
+    @inbounds setindex!(cf.real.data, Fixpoint(real(v), cf.real.scheme).data, i...)
+    @inbounds setindex!(cf.imag.data, Fixpoint(imag(v), cf.imag.scheme).data, i...)
+end
+
+"""
+Overload scalar setindex function for setting Fixpoint data elements of CFixpointArray type.
+"""
+Base.@inline function Base.setindex!(cf::CFixpointArray{N}, v::CFixpoint, i::Vararg{Int, N}) where {N}
+    @boundscheck checkbounds(cf.real.data, i...)
+    if cf.real.scheme == v.real.scheme
+        @inbounds setindex!(cf.real.data, v.real.data, i...)
+        @inbounds setindex!(cf.imag.data, v.imag.data, i...)
+    else
+        @inbounds setindex!(cf.real.data, Fixpoint(float(v.real), cf.real.scheme).data, i...)
+        @inbounds setindex!(cf.imag.data, Fixpoint(float(v.imag), cf.imag.scheme).data, i...)
+    end
+end
+
+"""
+Overload non-scalar setindex! function for setting complex integer data elements of CCFixpointArray type.
 """
 Base.@inline function Base.setindex!(cf::CFixpointArray{N}, v::AbstractArray{<:Complex{<:Integer}, M}, i...) where {N, M}
 	@boundscheck checkbounds(cf.real, i...)
@@ -659,7 +719,7 @@ Base.@inline function Base.setindex!(cf::CFixpointArray{N}, v::AbstractArray{<:C
 end
 
 """
-Overload non-scalar setindex! function for setting real data elements of CFixpointArray type.
+Overload non-scalar setindex! function for setting Complex data elements of CFixpointArray type.
 """
 Base.@inline function Base.setindex!(cf::CFixpointArray{N}, v::AbstractArray{<:Complex{<:AbstractFloat}, M}, i...) where {N, M}
 	@boundscheck checkbounds(cf.real, i...)
