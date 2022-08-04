@@ -23,7 +23,7 @@ end
 Bit reverses an array's contents according to bitRev of the array's indices.
 Takes an array of length N which must be a power of two.
 """
-function fixBitRevArray(array::CFixpointArray, N::Integer)::CFixpointArray
+function fixBitRevArray(array::CFixpointArray, N::Integer) :: CFixpointArray
     return array[bitRev(N)];
 end;
 
@@ -31,10 +31,10 @@ end;
 Generates twiddle factors for the natInIterDitFFT FFT.
 See also: [`fixNatInIterDitFFT`](@ref)   
 """
-function fixMakeTwiddle(N::Integer, fx_scheme::FixpointScheme)::CFixpointArray
+function fixMakeTwiddle(N::Integer, fx_scheme::FixpointScheme) :: CFixpointArray
     i = collect(0:div(N, 2)-1);
     twids = exp.(i .* (-2 * pi * (1im / N)));
-    fx_twids = fromComplex(twids,fx_scheme);
+    fx_twids = CFixpointArray{ndims(twids)}(twids, fx_scheme);
     return fx_twids;
 end
 
@@ -50,7 +50,7 @@ struct FixPFBScheme
     staged      ::Bool;
     fwidth      ::Float64;
     chan_acc    ::Bool;
-    window      ::FixpointArray;
+    window      ::CFixpointArray;
     twids       ::CFixpointArray;
     swreg       ::BitVector;
     in_dat_sch  ::FixpointScheme;
@@ -70,7 +70,7 @@ struct FixPFBScheme
             staged,
             fwidth,
             chan_acc,
-            fromFloat(coeff_gen(N, taps, win=w, fwidth=fwidth)[1], win_dat_sch),
+            CFixpointArray{ndims(coeff_gen(N, taps, win=w, fwidth=fwidth)[1])}(coeff_gen(N, taps, win=w, fwidth=fwidth)[1], win_dat_sch),
             fixBitRevArray(fixMakeTwiddle(N,coef_dat_sch),div(N,2)),
             shiftregMaker(swreg,N),
             in_dat_sch, 
@@ -139,8 +139,13 @@ FIR: Takes data segment (N long) and appends each value to each fir.
 Returns data segment (N long) that is the sum of fircontents*windowcoeffs.
 Operates on CFixpointArray types
 """
-function FixPFBFir(pfbsch::FixPFBScheme,x::CFixpointArray) :: CFixpointArray
-    pfbsch.reg = hcat(x,pfbsch.reg)[1:end,1:end-1];
+function FixPFBFir(pfbsch::FixPFBScheme, x::CFixpointArray) :: CFixpointArray
+    print(typeof(x),"\n")
+    print(typeof(pfbsch.reg),"\n")
+    tmp = hcat(x, pfbsch.reg);
+    print("Temp type: ",typeof(tmp),"\n")
+    print("Temp sliced type: ",typeof(tmp[1:end,1:end-1]), "\n")
+    pfbsch.reg[:,:] = tmp[1:end,1:end-1];
     X = sum(pfbsch.reg * pfbsch.window, dims=2);
     return X;
 end

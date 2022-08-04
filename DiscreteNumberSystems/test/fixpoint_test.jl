@@ -61,6 +61,7 @@ f_lshift = f_val1 << 1;
 
 #Test hcat of Fixpoint values
 ideal_hcat = hcat(val1,val2)
+print(typeof(ideal_hcat))
 f_hcat = hcat(f_val1,f_val2)
 @test isapprox(float(f_hcat), ideal_hcat, atol=0.0001)
 

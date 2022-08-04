@@ -73,7 +73,10 @@ struct Fixpoint <: Number
         else 
             error("No recognisable overflow method specified");
         end
-        return new(data,scheme);
+        return new(data, scheme);
+    end
+    function Fixpoint(i_data::Integer, scheme::FixpointScheme)
+        return new(i_data, scheme);
     end
 end
 
@@ -145,6 +148,7 @@ struct CFixpoint <: Number
     end
     CFixpoint(real::Integer,imag::Integer,scheme::FixpointScheme) = new(Fixpoint(real,scheme), Fixpoint(imag,scheme))
 end
+
 """
 Overload the Base.convert function to convert from CFixpoint to Complex. This process discards
 the scheme, only returning the complex point value.
@@ -177,7 +181,13 @@ struct CFixpointArray{N} <:AbstractArray{CFixpoint,N}
         if real.scheme != imag.scheme
             error("Real and Imag Fixpoint values must have the same scheme.")
         end
-       new(real,imag)
+        return new(real,imag)
+    end
+    function CFixpointArray{N}(complex :: AbstractArray{<:Complex,N}, scheme :: FixpointScheme) where {N}
+        return new(FixpointArray{N}(real(complex), scheme), FixpointArray{N}(imag(complex), scheme)) 
+    end
+    function CFixpointArray{N}(fl_data::AbstractArray{<:AbstractFloat,N}, scheme::FixpointScheme) where {N}
+        return new(FixpointArray{N}(fl_data, scheme), zeros(scheme, size(fl_data)))
     end
 end
 
@@ -188,7 +198,7 @@ the scheme, only returning the complex floating point array.
 function Base.convert(complex_arr::Type{AbstractArray{<:Complex{<:AbstractFloat},N}},cf_arr::CFixpointArray{N}) ::
                                                          AbstractArray{<:Complex{<:AbstractFloat},N} where {N}                                                    
     return convert(real(eltype(complex_arr)), cf_arr.real) .+ 
-    convert(imag(eltype(complex_arr), cf_arr.imag)) .* 1im;
+    convert(imag(eltype(complex_arr)), cf_arr.imag) .* 1im;
 end
 
 """
@@ -199,18 +209,18 @@ function Base.float(cf :: CFixpointArray{N}) :: Array{ComplexF64,N} where {N}
 end
 
 #########################################################################################
-# Float parsing funtions
+# Initialise and re-initialise functions
 #########################################################################################
-# """
-# Creates a Fixpoint populated with zero values. Creates a CFixpoint if complex is set to true.
-# """
-# function Base.zeros(fx_scheme :: FixpointScheme, dims :: Tuple; complex :: Bool = false) :: Union{Fixpoint,CFixpoint}
-#     if complex
-#         return fromComplex(zeros(Float64, dims),zeros(Float64, dims),fx_scheme);
-#     else
-#         return fromFloat(zeros(Float64, dims), fx_scheme);
-#     end
-# end
+"""
+Creates a Fixpoint populated with zero values. Creates a CFixpoint if complex is set to true.
+"""
+function Base.zeros(fx_scheme :: FixpointScheme, dims :: Tuple; complex :: Bool = false) :: Union{FixpointArray, CFixpointArray}
+    if complex
+        return CFixpointArray{length(dims)}(FixpointArray{length(dims)}(zeros(Float64, dims),fx_scheme),FixpointArray{length(dims)}(zeros(Float64, dims),fx_scheme));
+    else
+        return FixpointArray{length(dims)}(zeros(Float64, dims), fx_scheme);
+    end
+end
 
 # """
 # Fit all data within the min/max values for Fixpoint
@@ -710,7 +720,7 @@ Base.@inline function Base.setindex!(cf::CFixpointArray{N}, v::CFixpoint, i::Var
 end
 
 """
-Overload non-scalar setindex! function for setting complex integer data elements of CCFixpointArray type.
+Overload non-scalar setindex! function for setting complex integer data elements of CFixpointArray type.
 """
 Base.@inline function Base.setindex!(cf::CFixpointArray{N}, v::AbstractArray{<:Complex{<:Integer}, M}, i...) where {N, M}
 	@boundscheck checkbounds(cf.real, i...)
@@ -745,10 +755,11 @@ end
 Overload hcat function to handle horizontal concatenation of FixpointArray.
 Requires that schemes match.
 """
-function Base.hcat(f_1 :: FixpointArray{N}, f_2 :: FixpointArray{N}) :: FixpointArray where {N}
+function Base.hcat(f_1 :: FixpointArray{M}, f_2 :: FixpointArray{N}) :: FixpointArray where {M, N}
     #Check schemes match:
     if f_1.scheme == f_2.scheme
-        data = hcat(f_1.data,f_2.data)
+        data = hcat(f_1.data, f_2.data)
+        print("Type of data: ", typeof(data),"\n")
         return FixpointArray{ndims(data)}(data,f_1.scheme);
     else
         error("FixpointArray args don't share the same scheme.");
@@ -759,11 +770,14 @@ end
 Overload hcat function to handle horizontal concatenation of CFixpointArray.
 Requires that schemes match.
 """
-function Base.hcat(cf_1 :: CFixpointArray{N}, cf_2 :: CFixpointArray{N}) :: CFixpointArray{N} where {N}
+function Base.hcat(cf_1 :: CFixpointArray{M}, cf_2 :: CFixpointArray{N}) :: CFixpointArray where {M, N}
     #Check real schemes match - imag will match:
     if cf_1.real.scheme == cf_2.real.scheme
-        real = hcat(cf_1.real,cf_2.real)
-        return CFixpointArray{ndims(real)}(real, hcat(cf_1.imag,cf_2.imag));
+        real = hcat(cf_1.real, cf_2.real)
+        print("Type of real: ", typeof(real),"\n")
+        imag = hcat(cf_1.imag, cf_2.imag)
+        print("Type of imag: ", typeof(imag),"\n")
+        return CFixpointArray{ndims(real)}(real, imag);
     else
         error("CFixpointArray args don't share the same scheme.");
     end

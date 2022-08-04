@@ -1,5 +1,7 @@
 using FFTW;
 using Test;
+using Pkg
+Pkg.activate("./DiscreteNumberSystems")
 using DiscreteNumberSystems.FixpointSystem
 include("pfb_fixed.jl");
 include("pfb_floating.jl");
@@ -19,10 +21,10 @@ include("pfb_floating.jl");
 # @test all(abs.(flttwids .- toComplex(fixtwids)) .< 0.000001); 
 
 # Test FFTs
-N=1024;
+N=16;
 k = collect(1:1:N);
 taps=4;
-swreg = 1023;
+swreg = 15;
 
 data_sch = FixpointScheme(18,17);
 coeff_sch = FixpointScheme(18,17,ovflw_behav = "SATURATE"); #necessary else twiddle coeff +1 is captured as -0.999
@@ -32,7 +34,7 @@ data_fl = 0.5.*cos.(6*(2*pi/N) .*k);
 # data_fl = zeros(N,1);
 # data_fl[61:79] .= 0.1;
 # data_fl = data_fl .+ 1im .* zeros(N,1);
-data_fx = fromComplex(data_fl,data_sch);
+data_fx = CFixpointArray{ndims(data_fl)}(data_fl, data_sch);
 # ourfft = fixNatInIterDitFFT(pfbsch, data_fx);  
 # idealfft = fft(data_fl);
 # fltfft = natInIterDitFFT(fltpfbsch,data_fl);
