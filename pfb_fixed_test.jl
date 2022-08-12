@@ -7,18 +7,20 @@ include("pfb_fixed.jl");
 include("pfb_floating.jl");
 
 # Test bit reversal
-# s = float(collect(0:16-1)) .+ im.*float(collect(0:16-1));
-# cs_sch = FixpointScheme(10,0);
-# cs = fromComplex(s,cs_sch);
-# ct = fixBitRevArray(cs,16);
-# ct = fixBitRevArray(ct,16);
-# @test toComplex(cs) == toComplex(ct);
+s = float(collect(0:16-1)) .+ im.*float(collect(0:16-1));
+cs_sch = FixpointScheme(10,0);
+cs = CFixpointArray{ndims(s)}(s,cs_sch);
+ct = fixBitRevArray(cs,16);
+ct = fixBitRevArray(ct,16);
+# print(typeof(ct[1:5]),"\n")
+# print(float(ct)[1:5],'\n')
+@test isapprox(float(cs), float(ct), atol=0.0001);
 
-# # Test FFT twiddle generation
-# twid_sch = FixpointScheme(20,19);
-# fixtwids = fixMakeTwiddle(32,twid_sch);
-# flttwids = makeTwiddle(32);
-# @test all(abs.(flttwids .- toComplex(fixtwids)) .< 0.000001); 
+# Test FFT twiddle generation
+twid_sch = FixpointScheme(20,19,ovflw_behav="SATURATE");
+fixtwids = fixMakeTwiddle(8,twid_sch);
+flttwids = makeTwiddle(8);
+@test isapprox(flttwids, float(fixtwids), atol = 0.001); 
 
 # Test FFTs
 N=16;
@@ -33,9 +35,9 @@ pfbsch = FixPFBScheme(N,taps,data_sch,data_sch,coeff_sch,data_sch,data_sch,swreg
 data_fl = 0.5.*cos.(6*(2*pi/N) .*k);
 # data_fl = zeros(N,1);
 # data_fl[61:79] .= 0.1;
-# data_fl = data_fl .+ 1im .* zeros(N,1);
+data_fl = data_fl .+ 1im .* zeros(N,1);
 data_fx = CFixpointArray{ndims(data_fl)}(data_fl, data_sch);
-# ourfft = fixNatInIterDitFFT(pfbsch, data_fx);  
+ourfft = fixNatInIterDitFFT(pfbsch, data_fx);  
 # idealfft = fft(data_fl);
 # fltfft = natInIterDitFFT(fltpfbsch,data_fl);
 # ourfft_flt = toComplex(ourfft);
@@ -43,7 +45,7 @@ data_fx = CFixpointArray{ndims(data_fl)}(data_fl, data_sch);
 # @test any(abs.(fltfft./swreg .- ourfft_flt) .< 0.0001);
 
 # Test PFB FIR
-firout = FixPFBFir(pfbsch,data_fx)
+# firout = FixPFBFir(pfbsch,data_fx)
 
 
 
